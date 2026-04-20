@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CqrsModule } from '@nestjs/cqrs';
 import { buildTypeOrmOptions } from './shared/infrastructure/typeorm/typeorm.config';
 import { RiskClassificationModule } from './risk-classification/risk-classification.module';
+import { OnboardingModule } from './onboarding/onboarding.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RiskClassificationModule } from './risk-classification/risk-classificat
     }),
     CqrsModule,
     RiskClassificationModule,
+    OnboardingModule,
   ],
 })
 export class AppModule {}
