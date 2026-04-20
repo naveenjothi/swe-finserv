@@ -7,14 +7,17 @@ import { RulesConfigOrmEntity } from './infrastructure/persistence/rules-config.
 import { RulesConfigTypeOrmRepository } from './infrastructure/persistence/rules-config.repository';
 import { RulesCacheService } from './infrastructure/cache/rules-cache.service';
 import { ClassifyRecordHandler } from './application/commands/classify-record.handler';
+import { PublishRuleSetHandler } from './application/commands/publish-rule-set.handler';
 import { GetActiveRulesHandler } from './application/queries/get-active-rules.handler';
 import { GetRulesVersionHandler } from './application/queries/get-rules-version.handler';
+import { RulesAdminController } from './infrastructure/http/rules-admin.controller';
 
-const commandHandlers = [ClassifyRecordHandler];
+const commandHandlers = [ClassifyRecordHandler, PublishRuleSetHandler];
 const queryHandlers = [GetActiveRulesHandler, GetRulesVersionHandler];
 
 @Module({
   imports: [CqrsModule, TypeOrmModule.forFeature([RulesConfigOrmEntity])],
+  controllers: [RulesAdminController],
   providers: [
     RulesEngineService,
     RulesCacheService,
