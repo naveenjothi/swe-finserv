@@ -8,9 +8,7 @@ import {
 import { OpenKycCaseCommand, OpenKycCaseResult } from './open-kyc-case.command';
 
 @CommandHandler(OpenKycCaseCommand)
-export class OpenKycCaseHandler
-  implements ICommandHandler<OpenKycCaseCommand, OpenKycCaseResult>
-{
+export class OpenKycCaseHandler implements ICommandHandler<OpenKycCaseCommand, OpenKycCaseResult> {
   constructor(
     @Inject(KYC_CASE_REPOSITORY)
     private readonly repo: KycCaseRepositoryPort,

@@ -2,10 +2,22 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RulesSource } from '../../domain/entities/rule-set.entity';
-import { PublishRuleSetCommand, PublishRuleSetResult } from '../../application/commands/publish-rule-set.command';
-import { ClassifyRecordCommand, ClassifyRecordResult } from '../../application/commands/classify-record.command';
-import { GetActiveRulesQuery, ActiveRulesView } from '../../application/queries/get-active-rules.query';
-import { GetRulesVersionQuery, RulesVersionView } from '../../application/queries/get-rules-version.query';
+import {
+  PublishRuleSetCommand,
+  PublishRuleSetResult,
+} from '../../application/commands/publish-rule-set.command';
+import {
+  ClassifyRecordCommand,
+  ClassifyRecordResult,
+} from '../../application/commands/classify-record.command';
+import {
+  GetActiveRulesQuery,
+  ActiveRulesView,
+} from '../../application/queries/get-active-rules.query';
+import {
+  GetRulesVersionQuery,
+  RulesVersionView,
+} from '../../application/queries/get-rules-version.query';
 import { PublishRuleSetDto, FcaWebhookDto } from '../../application/dto/rules-admin.dto';
 import { ClassifiableRecord } from '../../domain/value-objects/classifiable-record.vo';
 

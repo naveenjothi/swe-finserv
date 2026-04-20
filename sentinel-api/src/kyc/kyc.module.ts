@@ -7,7 +7,10 @@ import { KycCaseTypeOrmRepository } from './infrastructure/persistence/kyc-case.
 import { KYC_CASE_REPOSITORY } from './domain/ports/kyc-case.repository.port';
 import { OpenKycCaseHandler } from './application/commands/open-kyc-case.handler';
 import { TransitionKycHandler } from './application/commands/transition-kyc.handler';
-import { GetKycCasesHandler, GetKycCaseByIdHandler } from './application/queries/get-kyc-cases.handler';
+import {
+  GetKycCasesHandler,
+  GetKycCaseByIdHandler,
+} from './application/queries/get-kyc-cases.handler';
 import { KycAuditHandler } from './application/event-handlers/kyc-audit.handler';
 import { KycController } from './infrastructure/http/kyc.controller';
 
@@ -16,11 +19,7 @@ const queryHandlers = [GetKycCasesHandler, GetKycCaseByIdHandler];
 const eventHandlers = [KycAuditHandler];
 
 @Module({
-  imports: [
-    CqrsModule,
-    TypeOrmModule.forFeature([KycCaseOrmEntity]),
-    AuditModule,
-  ],
+  imports: [CqrsModule, TypeOrmModule.forFeature([KycCaseOrmEntity]), AuditModule],
   controllers: [KycController],
   providers: [
     { provide: KYC_CASE_REPOSITORY, useClass: KycCaseTypeOrmRepository },

@@ -40,35 +40,39 @@ The rules engine (`src/risk-classification/domain/services/rules-engine.service.
 ## API endpoints
 
 ### Onboarding
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/onboarding` | Submit a new client record (auto-classifies) |
-| `POST` | `/api/onboarding/import` | Bulk CSV import (multipart) |
-| `GET` | `/api/clients` | List client records (paginated) |
-| `GET` | `/api/clients/:id` | Get client record by ID |
+
+| Method | Path                     | Description                                  |
+| ------ | ------------------------ | -------------------------------------------- |
+| `POST` | `/api/onboarding`        | Submit a new client record (auto-classifies) |
+| `POST` | `/api/onboarding/import` | Bulk CSV import (multipart)                  |
+| `GET`  | `/api/clients`           | List client records (paginated)              |
+| `GET`  | `/api/clients/:id`       | Get client record by ID                      |
 
 ### Rules Admin
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/rules/active` | Get the currently active rule set |
-| `GET` | `/api/rules/version` | Get the active rules version |
-| `POST` | `/api/rules` | Publish a new rule set (manual) |
-| `POST` | `/api/rules/classify` | Classify a record (dry run) |
-| `POST` | `/api/rules/fca-webhook` | Receive FCA regulatory update |
+
+| Method | Path                     | Description                       |
+| ------ | ------------------------ | --------------------------------- |
+| `GET`  | `/api/rules/active`      | Get the currently active rule set |
+| `GET`  | `/api/rules/version`     | Get the active rules version      |
+| `POST` | `/api/rules`             | Publish a new rule set (manual)   |
+| `POST` | `/api/rules/classify`    | Classify a record (dry run)       |
+| `POST` | `/api/rules/fca-webhook` | Receive FCA regulatory update     |
 
 ### KYC
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/kyc` | Open a KYC case for a client |
-| `PATCH` | `/api/kyc/:id/status` | Transition KYC case status |
-| `GET` | `/api/kyc` | List KYC cases (paginated) |
-| `GET` | `/api/kyc/:id` | Get KYC case by ID |
+
+| Method  | Path                  | Description                  |
+| ------- | --------------------- | ---------------------------- |
+| `POST`  | `/api/kyc`            | Open a KYC case for a client |
+| `PATCH` | `/api/kyc/:id/status` | Transition KYC case status   |
+| `GET`   | `/api/kyc`            | List KYC cases (paginated)   |
+| `GET`   | `/api/kyc/:id`        | Get KYC case by ID           |
 
 ### Audit
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/audit` | List all audit entries (paginated) |
-| `GET` | `/api/audit/:aggregateId` | Get audit trail for an aggregate |
+
+| Method | Path                      | Description                        |
+| ------ | ------------------------- | ---------------------------------- |
+| `GET`  | `/api/audit`              | List all audit entries (paginated) |
+| `GET`  | `/api/audit/:aggregateId` | Get audit trail for an aggregate   |
 
 ## Project layout
 
@@ -105,13 +109,13 @@ src/
 
 ## Database migrations
 
-| Timestamp | Table | Notes |
-|-----------|-------|-------|
-| `1713600000000` | `rules_config` | Rules engine seed data (v1.0.0-2024) |
-| `1713700000000` | `client_records` | Append-only with immutability trigger |
-| `1713800000000` | `audit_log` | Append-only with immutability trigger |
-| `1713900000000` | `kyc_cases` | FK to `client_records`, unique on `client_record_id` |
-| `1714000000000` | `outbox` | Transactional outbox with partial index on pending |
+| Timestamp       | Table            | Notes                                                |
+| --------------- | ---------------- | ---------------------------------------------------- |
+| `1713600000000` | `rules_config`   | Rules engine seed data (v1.0.0-2024)                 |
+| `1713700000000` | `client_records` | Append-only with immutability trigger                |
+| `1713800000000` | `audit_log`      | Append-only with immutability trigger                |
+| `1713900000000` | `kyc_cases`      | FK to `client_records`, unique on `client_record_id` |
+| `1714000000000` | `outbox`         | Transactional outbox with partial index on pending   |
 
 ## Architecture highlights
 

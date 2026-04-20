@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaginatedResult, PaginationDto } from '../../../shared/application/pagination.dto';
@@ -37,9 +28,7 @@ export class KycController {
   @Post()
   @ApiOperation({ summary: 'Open a new KYC case for a client record' })
   async open(@Body() dto: OpenKycCaseDto): Promise<OpenKycCaseResult> {
-    return this.commandBus.execute(
-      new OpenKycCaseCommand(dto.client_record_id, 'system'),
-    );
+    return this.commandBus.execute(new OpenKycCaseCommand(dto.client_record_id, 'system'));
   }
 
   @Patch(':id/status')
@@ -48,9 +37,7 @@ export class KycController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: TransitionKycDto,
   ): Promise<TransitionKycResult> {
-    return this.commandBus.execute(
-      new TransitionKycCommand(id, dto.status, 'system', dto.notes),
-    );
+    return this.commandBus.execute(new TransitionKycCommand(id, dto.status, 'system', dto.notes));
   }
 
   @Get()

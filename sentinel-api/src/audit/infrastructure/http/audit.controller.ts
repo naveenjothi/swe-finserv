@@ -12,9 +12,7 @@ export class AuditController {
   @Get()
   @ApiOperation({ summary: 'List all audit log entries (paginated)' })
   async list(@Query() pagination: PaginationDto): Promise<PaginatedResult<AuditEntryView>> {
-    return this.queryBus.execute(
-      new GetAuditLogQuery(pagination.skip, pagination.take),
-    );
+    return this.queryBus.execute(new GetAuditLogQuery(pagination.skip, pagination.take));
   }
 
   @Get(':aggregateId')

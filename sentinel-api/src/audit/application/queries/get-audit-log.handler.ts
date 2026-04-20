@@ -1,16 +1,14 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { PaginatedResult } from '../../../shared/application/pagination.dto';
-import {
-  AUDIT_REPOSITORY,
-  AuditRepositoryPort,
-} from '../../domain/ports/audit.repository.port';
+import { AUDIT_REPOSITORY, AuditRepositoryPort } from '../../domain/ports/audit.repository.port';
 import { AuditEntryView, GetAuditLogQuery } from './get-audit-log.query';
 
 @QueryHandler(GetAuditLogQuery)
-export class GetAuditLogHandler
-  implements IQueryHandler<GetAuditLogQuery, PaginatedResult<AuditEntryView>>
-{
+export class GetAuditLogHandler implements IQueryHandler<
+  GetAuditLogQuery,
+  PaginatedResult<AuditEntryView>
+> {
   constructor(
     @Inject(AUDIT_REPOSITORY)
     private readonly repo: AuditRepositoryPort,

@@ -6,11 +6,7 @@ import {
   KycCaseRepositoryPort,
 } from '../../domain/ports/kyc-case.repository.port';
 import { KycCase } from '../../domain/entities/kyc-case.entity';
-import {
-  GetKycCasesQuery,
-  GetKycCaseByIdQuery,
-  KycCaseView,
-} from './get-kyc-cases.query';
+import { GetKycCasesQuery, GetKycCaseByIdQuery, KycCaseView } from './get-kyc-cases.query';
 
 function toView(c: KycCase): KycCaseView {
   return {
@@ -27,9 +23,10 @@ function toView(c: KycCase): KycCaseView {
 }
 
 @QueryHandler(GetKycCasesQuery)
-export class GetKycCasesHandler
-  implements IQueryHandler<GetKycCasesQuery, PaginatedResult<KycCaseView>>
-{
+export class GetKycCasesHandler implements IQueryHandler<
+  GetKycCasesQuery,
+  PaginatedResult<KycCaseView>
+> {
   constructor(
     @Inject(KYC_CASE_REPOSITORY)
     private readonly repo: KycCaseRepositoryPort,
@@ -47,9 +44,7 @@ export class GetKycCasesHandler
 }
 
 @QueryHandler(GetKycCaseByIdQuery)
-export class GetKycCaseByIdHandler
-  implements IQueryHandler<GetKycCaseByIdQuery, KycCaseView>
-{
+export class GetKycCaseByIdHandler implements IQueryHandler<GetKycCaseByIdQuery, KycCaseView> {
   constructor(
     @Inject(KYC_CASE_REPOSITORY)
     private readonly repo: KycCaseRepositoryPort,

@@ -13,7 +13,11 @@ export class PublishRuleSetDto {
     example: {
       high_risk: {
         countries: ['Russia', 'Belarus'],
-        boolean_flags: { pep_status: true, sanctions_screening_match: true, adverse_media_flag: true },
+        boolean_flags: {
+          pep_status: true,
+          sanctions_screening_match: true,
+          adverse_media_flag: true,
+        },
       },
       medium_risk: {
         countries: ['Brazil', 'Turkey'],

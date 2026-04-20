@@ -4,10 +4,7 @@ import { OnboardingSubmittedEvent } from '../../../onboarding/domain/events/onbo
 import { ClassificationMismatchDetectedEvent } from '../../../risk-classification/domain/events/classification-mismatch-detected.event';
 import { BulkReclassificationCompletedEvent } from '../../../risk-classification/domain/events/bulk-reclassification-completed.event';
 import { AuditEntry } from '../../domain/entities/audit-entry.entity';
-import {
-  AUDIT_REPOSITORY,
-  AuditRepositoryPort,
-} from '../../domain/ports/audit.repository.port';
+import { AUDIT_REPOSITORY, AuditRepositoryPort } from '../../domain/ports/audit.repository.port';
 
 @EventsHandler(OnboardingSubmittedEvent)
 @Injectable()
@@ -65,9 +62,7 @@ export class MismatchAuditHandler implements IEventHandler<ClassificationMismatc
 
 @EventsHandler(BulkReclassificationCompletedEvent)
 @Injectable()
-export class BulkReclassificationAuditHandler
-  implements IEventHandler<BulkReclassificationCompletedEvent>
-{
+export class BulkReclassificationAuditHandler implements IEventHandler<BulkReclassificationCompletedEvent> {
   private readonly logger = new Logger(BulkReclassificationAuditHandler.name);
 
   constructor(

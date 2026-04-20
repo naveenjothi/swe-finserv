@@ -7,9 +7,10 @@ import {
 import { TransitionKycCommand, TransitionKycResult } from './transition-kyc.command';
 
 @CommandHandler(TransitionKycCommand)
-export class TransitionKycHandler
-  implements ICommandHandler<TransitionKycCommand, TransitionKycResult>
-{
+export class TransitionKycHandler implements ICommandHandler<
+  TransitionKycCommand,
+  TransitionKycResult
+> {
   constructor(
     @Inject(KYC_CASE_REPOSITORY)
     private readonly repo: KycCaseRepositoryPort,

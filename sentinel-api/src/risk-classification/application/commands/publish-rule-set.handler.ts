@@ -9,9 +9,10 @@ import { RulesCacheService } from '../../infrastructure/cache/rules-cache.servic
 import { PublishRuleSetCommand, PublishRuleSetResult } from './publish-rule-set.command';
 
 @CommandHandler(PublishRuleSetCommand)
-export class PublishRuleSetHandler
-  implements ICommandHandler<PublishRuleSetCommand, PublishRuleSetResult>
-{
+export class PublishRuleSetHandler implements ICommandHandler<
+  PublishRuleSetCommand,
+  PublishRuleSetResult
+> {
   private readonly logger = new Logger(PublishRuleSetHandler.name);
 
   constructor(
