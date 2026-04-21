@@ -16,7 +16,7 @@ async function bootstrap(): Promise<void> {
   });
 
   const config = app.get(ConfigService);
-  const port = config.get<number>('PORT', 3000);
+  const port = config.get<number>('PORT', 8000);
   const corsOrigin = config.get<string>('CORS_ORIGIN', '*');
 
   app.setGlobalPrefix('api', { exclude: ['health'] });
