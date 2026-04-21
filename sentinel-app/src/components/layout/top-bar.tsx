@@ -30,17 +30,30 @@ export function TopBar() {
   ]
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b px-6">
+    <header className="flex h-14 items-center gap-4 border-b border-primary-light/60 bg-primary px-6 text-primary-foreground">
       <SidebarTrigger />
-      <Separator orientation="vertical" className="h-6" />
+      <Separator
+        orientation="vertical"
+        className="h-6 bg-primary-foreground/30"
+      />
 
       <div className="flex flex-1 items-center gap-4">
-        <h1 className="text-sm font-medium">SENTINEL</h1>
+        <div className="flex flex-col leading-tight">
+          <span className="text-sm font-semibold">
+            Halcyon Capital Partners
+          </span>
+          <span className="text-[13px] font-normal text-primary-foreground/80">
+            SENTINEL Onboarding
+          </span>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
         {pendingCount > 0 && (
-          <Badge variant="secondary" className="gap-1">
+          <Badge
+            variant="secondary"
+            className="gap-1 bg-primary-light text-primary-foreground"
+          >
             <CloudUpload className="size-3" />
             {pendingCount} pending
           </Badge>
@@ -62,7 +75,11 @@ export function TopBar() {
                 switchRole(nextRole)
               }}
             >
-              <SelectTrigger size="sm" aria-label="Switch role">
+              <SelectTrigger
+                size="sm"
+                aria-label="Switch role"
+                className="border-primary-light/60 bg-primary-light/35 text-primary-foreground"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -75,7 +92,10 @@ export function TopBar() {
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <Separator orientation="vertical" className="h-4" />
+            <Separator
+              orientation="vertical"
+              className="h-4 bg-primary-foreground/30"
+            />
             <span className="font-medium">{user.name}</span>
           </div>
         )}

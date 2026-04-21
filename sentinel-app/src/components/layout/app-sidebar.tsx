@@ -16,7 +16,7 @@ import {
   UserPlus,
   Upload,
   Users,
-  Shield,
+  Landmark,
   FileText,
   Settings,
 } from "lucide-react"
@@ -36,9 +36,16 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <Shield className="size-6 text-primary" />
-          <span className="text-lg font-semibold text-primary">SENTINEL</span>
+        <div className="flex items-start gap-2">
+          <Landmark className="mt-0.5 size-5 text-sidebar-primary" />
+          <div className="leading-tight">
+            <div className="text-sm font-bold text-sidebar-primary">
+              Halcyon Capital Partners
+            </div>
+            <div className="text-xs font-normal text-sidebar-foreground/80">
+              SENTINEL Onboarding
+            </div>
+          </div>
         </div>
       </SidebarHeader>
 
@@ -106,7 +113,7 @@ export function AppSidebar() {
                     isActive={location.pathname === "/kyc"}
                   >
                     <Link to="/kyc">
-                      <Shield />
+                      <Landmark />
                       <span>KYC Queue</span>
                     </Link>
                   </SidebarMenuButton>
