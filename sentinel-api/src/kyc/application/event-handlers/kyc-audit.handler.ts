@@ -18,6 +18,7 @@ export class KycAuditHandler implements IEventHandler<KycStatusChangedEvent> {
   ) {}
 
   async handle(event: KycStatusChangedEvent): Promise<void> {
+    console.log('KycStatusChangedEvent', event);
     const isEddApproval =
       event.previousStatus === 'ENHANCED_DUE_DILIGENCE' && event.newStatus === 'APPROVED';
 

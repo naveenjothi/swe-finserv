@@ -10,6 +10,7 @@ export class EddTriggerHandler implements IEventHandler<OnboardingSubmittedEvent
   constructor(private readonly commandBus: CommandBus) {}
 
   async handle(event: OnboardingSubmittedEvent) {
+    console.log('OnboardingSubmittedEvent', event);
     if (event.computedTier === RiskTier.HIGH) {
       await this.commandBus.execute(
         new OpenKycCaseCommand(

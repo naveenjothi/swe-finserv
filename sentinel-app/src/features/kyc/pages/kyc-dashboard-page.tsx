@@ -36,7 +36,9 @@ import { AlertTriangle, Edit, CheckCircle } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import type { KycStatus } from "@/shared/types/onboarding.types"
-import type { KycRecord } from "@/shared/types/kyc.types"
+import type { components } from "@/shared/api/generated/sentinel-api.types"
+
+type KycRecord = components["schemas"]["KycCaseView"]
 
 // Quick inline components for tabs
 export function Component() {
@@ -56,9 +58,11 @@ export function Component() {
     if (!editingRecord) return
     try {
       await updateKyc.mutateAsync({
-        client_id: editingRecord.client_id,
-        kyc_status: newStatus,
-        reason,
+        id: editingRecord.id,
+        data: {
+          status: newStatus,
+          notes: reason,
+        },
       })
       toast.success("KYC status updated")
       setEditingRecord(null)

@@ -25,10 +25,13 @@ export class TransitionKycHandler implements ICommandHandler<
 
     const previousStatus = kycCase.status;
     kycCase.transition(command.newStatus, command.changedBy, command.notes);
+    const domainEvents = kycCase.pullDomainEvents();
 
     const saved = await this.repo.save(kycCase);
 
-    for (const event of saved.pullDomainEvents()) {
+    // Persist first, then publish events captured from the in-memory aggregate.
+    // The repository save returns a rehydrated instance without domain event queue.
+    for (const event of domainEvents) {
       this.eventBus.publish(event);
     }
 

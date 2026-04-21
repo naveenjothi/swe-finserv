@@ -6,6 +6,7 @@ import { RulesCacheService } from '../../../risk-classification/infrastructure/c
 import { RiskTier } from '../../../risk-classification/domain/value-objects/risk-tier.vo';
 import { ClassificationMismatchDetectedEvent } from '../../../risk-classification/domain/events/classification-mismatch-detected.event';
 import { ClientRecord } from '../../domain/entities/client-record.entity';
+import { DomainEvent } from '../../../shared/domain/domain-event';
 import {
   CLIENT_RECORD_REPOSITORY,
   ClientRecordRepositoryPort,
@@ -92,6 +93,7 @@ export class ImportCsvHandler implements ICommandHandler<ImportCsvCommand, Impor
 
     const ruleSet = await this.cache.getActive();
     const entities: ClientRecord[] = [];
+    const domainEvents: DomainEvent[] = [];
     const resultRows: CsvImportRow[] = [];
 
     for (let i = 0; i < rows.length; i++) {
@@ -129,6 +131,7 @@ export class ImportCsvHandler implements ICommandHandler<ImportCsvCommand, Impor
       });
 
       entities.push(entity);
+      domainEvents.push(...entity.pullDomainEvents());
       resultRows.push({
         row: i + 1,
         client_name: row.client_name,
@@ -141,11 +144,10 @@ export class ImportCsvHandler implements ICommandHandler<ImportCsvCommand, Impor
 
     const saved = await this.repo.saveBatch(entities);
 
-    // Publish events
-    for (const entity of saved) {
-      for (const event of entity.pullDomainEvents()) {
-        this.eventBus.publish(event);
-      }
+    // Publish events collected before persistence. saveBatch returns rehydrated
+    // entity instances and does not preserve in-memory domain events.
+    for (const event of domainEvents) {
+      this.eventBus.publish(event);
     }
 
     // Emit mismatch events
