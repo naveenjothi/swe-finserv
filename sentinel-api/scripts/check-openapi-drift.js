@@ -28,7 +28,7 @@ async function main() {
     if (!(0, node_fs_1.existsSync)(staticSpecPath)) {
         throw new Error(`Static contract file not found at ${staticSpecPath}`);
     }
-    const runtimeUrl = process.env.RUNTIME_OPENAPI_URL ?? 'http://localhost:3000/docs-json';
+    const runtimeUrl = process.env.RUNTIME_OPENAPI_URL ?? 'http://localhost:8000/docs-json';
     const staticContract = (0, js_yaml_1.load)((0, node_fs_1.readFileSync)(staticSpecPath, 'utf8'));
     let runtimeResponse;
     try {

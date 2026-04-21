@@ -23,8 +23,8 @@ npm run migration:run
 npm run start:dev
 ```
 
-- API: http://localhost:3000
-- Swagger: http://localhost:3000/docs
+- API: http://localhost:8000
+- Swagger: http://localhost:8000/docs
 - pgAdmin: http://localhost:5050
 - RabbitMQ UI: http://localhost:15672
 
@@ -46,7 +46,7 @@ Optional identity headers:
 Example:
 
 ```bash
-curl -H "Authorization: Bearer AUDITOR" http://localhost:3000/api/audit
+curl -H "Authorization: Bearer AUDITOR" http://localhost:8000/api/audit
 ```
 
 ## Tests

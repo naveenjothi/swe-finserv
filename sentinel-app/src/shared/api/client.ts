@@ -2,7 +2,7 @@ import ky from "ky"
 import { useAuthStore } from "@/stores/auth.store"
 
 export const api = ky.create({
-  prefixUrl: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+  prefixUrl: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
   hooks: {
     beforeRequest: [
       (request) => {

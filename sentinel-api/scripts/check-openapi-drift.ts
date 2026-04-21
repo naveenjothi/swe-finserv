@@ -39,7 +39,7 @@ async function main(): Promise<void> {
     throw new Error(`Static contract file not found at ${staticSpecPath}`);
   }
 
-  const runtimeUrl = process.env.RUNTIME_OPENAPI_URL ?? 'http://localhost:3000/docs-json';
+  const runtimeUrl = process.env.RUNTIME_OPENAPI_URL ?? 'http://localhost:8000/docs-json';
 
   const staticContract = load(readFileSync(staticSpecPath, 'utf8'));
 

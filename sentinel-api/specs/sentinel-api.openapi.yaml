@@ -8,7 +8,7 @@ info:
     This file is intended to be the source-of-truth contract for backend/frontend integration,
     test generation, and API review.
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:8000
     description: Local development
 
 tags:
