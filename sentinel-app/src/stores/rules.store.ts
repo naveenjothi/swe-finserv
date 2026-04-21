@@ -70,7 +70,7 @@ export const useRulesStore = create<RulesState>()(
           if (versionInfo.version === version) return
 
           const rulesResponse = await api
-            .get("rules/current")
+            .get("rules/active")
             .json<RulesPayload>()
 
           set({

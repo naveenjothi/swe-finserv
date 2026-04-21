@@ -20,6 +20,10 @@ import {
   GetRulesVersionQuery,
   RulesVersionView,
 } from '../../application/queries/get-rules-version.query';
+import {
+  GetRulesVersionsQuery,
+  RulesVersionInfoView,
+} from '../../application/queries/get-rules-versions.query';
 import { PublishRuleSetDto, FcaWebhookDto } from '../../application/dto/rules-admin.dto';
 import { ClassifiableRecord } from '../../domain/value-objects/classifiable-record.vo';
 
@@ -43,6 +47,13 @@ export class RulesAdminController {
   @ApiOperation({ summary: 'Get the active rules version' })
   async getVersion(): Promise<RulesVersionView> {
     return this.queryBus.execute(new GetRulesVersionQuery());
+  }
+
+  @Get('versions')
+  @Roles(Role.COMPLIANCE_OFFICER, Role.AUDITOR)
+  @ApiOperation({ summary: 'Get all historical rule versions' })
+  async getVersions(): Promise<RulesVersionInfoView[]> {
+    return this.queryBus.execute(new GetRulesVersionsQuery());
   }
 
   @Post()

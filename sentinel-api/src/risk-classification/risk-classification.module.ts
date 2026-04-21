@@ -10,10 +10,11 @@ import { ClassifyRecordHandler } from './application/commands/classify-record.ha
 import { PublishRuleSetHandler } from './application/commands/publish-rule-set.handler';
 import { GetActiveRulesHandler } from './application/queries/get-active-rules.handler';
 import { GetRulesVersionHandler } from './application/queries/get-rules-version.handler';
+import { GetRulesVersionsHandler } from './application/queries/get-rules-versions.handler';
 import { RulesAdminController } from './infrastructure/http/rules-admin.controller';
 
 const commandHandlers = [ClassifyRecordHandler, PublishRuleSetHandler];
-const queryHandlers = [GetActiveRulesHandler, GetRulesVersionHandler];
+const queryHandlers = [GetActiveRulesHandler, GetRulesVersionHandler, GetRulesVersionsHandler];
 
 @Module({
   imports: [CqrsModule, TypeOrmModule.forFeature([RulesConfigOrmEntity])],
