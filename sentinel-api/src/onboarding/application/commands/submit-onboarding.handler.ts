@@ -46,6 +46,7 @@ export class SubmitOnboardingHandler implements ICommandHandler<
       declaredTier: command.declaredTier,
       mismatch,
       submittedBy: command.submittedBy,
+      relationship_manager: command.submittedBy,
     });
 
     const saved = await this.repo.save(entity);

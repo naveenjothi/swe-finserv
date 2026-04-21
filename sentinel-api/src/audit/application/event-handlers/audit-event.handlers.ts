@@ -25,7 +25,7 @@ export class OnboardingAuditHandler implements IEventHandler<OnboardingSubmitted
         rulesVersion: event.rulesVersion,
         computedTier: event.computedTier,
       },
-      performedBy: 'system',
+      performedBy: event.createdBy || 'system',
     });
     await this.repo.save(entry);
     this.logger.debug(`Audit: ${event.eventType} for ${event.aggregateId}`);
@@ -53,7 +53,7 @@ export class MismatchAuditHandler implements IEventHandler<ClassificationMismatc
         computedTier: event.computedTier,
         isCritical: event.isCritical,
       },
-      performedBy: 'system',
+      performedBy: 'system', // Ideally propagated from the command that caused the mismatch
     });
     await this.repo.save(entry);
     this.logger.debug(`Audit: mismatch for ${event.aggregateId} (critical: ${event.isCritical})`);

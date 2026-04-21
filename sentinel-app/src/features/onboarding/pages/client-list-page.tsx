@@ -44,6 +44,7 @@ export function Component() {
             <TableHead>EDD</TableHead>
             <TableHead>Mismatch</TableHead>
             <TableHead>Submitted By</TableHead>
+            <TableHead>Relationship Manager</TableHead>
             <TableHead>Date</TableHead>
             <TableHead className="w-12" />
           </TableRow>
@@ -87,6 +88,9 @@ export function Component() {
                   </TableCell>
                   <TableCell className="text-sm">
                     {client.submitted_by}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {client.relationship_manager}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(client.created_at).toLocaleDateString()}

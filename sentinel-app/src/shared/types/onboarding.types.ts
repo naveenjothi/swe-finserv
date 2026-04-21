@@ -32,6 +32,7 @@ export interface ClientListItem {
   rules_version: string
   submitted_by: string
   created_at: string
+  relationship_manager: string
 }
 
 /** GET /api/clients/:id — detail view */

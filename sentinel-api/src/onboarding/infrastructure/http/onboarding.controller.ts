@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   ParseUUIDPipe,
   Post,
@@ -39,7 +40,11 @@ export class OnboardingController {
   @Post('onboarding')
   @Roles(Role.RM)
   @ApiOperation({ summary: 'Submit a client onboarding record' })
-  async submit(@Body() dto: SubmitOnboardingDto): Promise<SubmitOnboardingResult> {
+  async submit(
+    @Body() dto: SubmitOnboardingDto,
+    @Headers('x-user-name') userName?: string,
+  ): Promise<SubmitOnboardingResult> {
+    const performedBy = userName || 'system';
     return this.commandBus.execute(
       new SubmitOnboardingCommand(
         dto.client_name,
@@ -52,7 +57,7 @@ export class OnboardingController {
           annual_income: dto.annual_income,
           source_of_funds: dto.source_of_funds,
         },
-        'system', // TODO: extract from JWT when auth is wired
+        performedBy, // Now driven by the auth/user context
         dto.declared_tier ?? null,
       ),
     );
@@ -69,8 +74,12 @@ export class OnboardingController {
       properties: { file: { type: 'string', format: 'binary' } },
     },
   })
-  async importCsv(@UploadedFile() file: Express.Multer.File): Promise<ImportCsvResult> {
-    return this.commandBus.execute(new ImportCsvCommand(file.buffer, 'system'));
+  async importCsv(
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('x-user-name') userName?: string,
+  ): Promise<ImportCsvResult> {
+    const performedBy = userName || 'system';
+    return this.commandBus.execute(new ImportCsvCommand(file.buffer, performedBy));
   }
 
   @Get('clients')

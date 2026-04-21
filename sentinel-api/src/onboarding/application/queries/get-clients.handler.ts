@@ -1,4 +1,3 @@
-import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -25,7 +24,7 @@ export class GetClientsHandler implements IQueryHandler<
         c.id, c.client_name, c.client_type, c.computed_tier, 
         c.requires_edd, c.mismatch, c.rules_version, 
         c.submitted_by, c.created_at,
-        k.status as kyc_status
+        k.status as kyc_status, c.relationship_manager
       FROM client_records c
       LEFT JOIN kyc_cases k ON k.client_record_id = c.id
       ORDER BY c.created_at DESC
@@ -46,6 +45,7 @@ export class GetClientsHandler implements IQueryHandler<
         rules_version: r.rules_version,
         submitted_by: r.submitted_by,
         created_at: r.created_at.toISOString(),
+        relationship_manager: r.relationship_manager,
       })),
       total,
       page: Math.floor(query.skip / query.take) + 1,

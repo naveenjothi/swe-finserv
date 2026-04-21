@@ -125,6 +125,7 @@ export class ImportCsvHandler implements ICommandHandler<ImportCsvCommand, Impor
         declaredTier,
         mismatch,
         submittedBy: command.submittedBy,
+        relationship_manager: row.relationship_manager ?? null,
       });
 
       entities.push(entity);

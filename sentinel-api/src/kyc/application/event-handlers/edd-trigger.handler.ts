@@ -12,11 +12,15 @@ export class EddTriggerHandler implements IEventHandler<OnboardingSubmittedEvent
   async handle(event: OnboardingSubmittedEvent) {
     if (event.computedTier === RiskTier.HIGH) {
       await this.commandBus.execute(
-        new OpenKycCaseCommand(event.aggregateId, 'SYSTEM', KycStatus.ENHANCED_DUE_DILIGENCE),
+        new OpenKycCaseCommand(
+          event.aggregateId,
+          event.createdBy ?? 'SYSTEM',
+          KycStatus.ENHANCED_DUE_DILIGENCE,
+        ),
       );
     } else if (event.computedTier === RiskTier.MEDIUM) {
       await this.commandBus.execute(
-        new OpenKycCaseCommand(event.aggregateId, 'SYSTEM', KycStatus.PENDING),
+        new OpenKycCaseCommand(event.aggregateId, event.createdBy ?? 'SYSTEM', KycStatus.PENDING),
       );
     }
   }

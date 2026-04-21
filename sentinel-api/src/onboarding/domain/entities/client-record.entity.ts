@@ -22,6 +22,7 @@ export interface ClientRecordProps {
   mismatch: boolean;
   submittedBy: string;
   createdAt?: Date;
+  relationship_manager: string | null;
 }
 
 export class ClientRecord extends AggregateRoot {
@@ -40,6 +41,7 @@ export class ClientRecord extends AggregateRoot {
   private readonly _declaredTier: RiskTier | null;
   private readonly _mismatch: boolean;
   private readonly _submittedBy: string;
+  private readonly _relationship_manager: string | null;
 
   private constructor(props: ClientRecordProps) {
     super(props.id, props.createdAt);
@@ -58,6 +60,7 @@ export class ClientRecord extends AggregateRoot {
     this._declaredTier = props.declaredTier;
     this._mismatch = props.mismatch;
     this._submittedBy = props.submittedBy;
+    this._relationship_manager = props.relationship_manager;
   }
 
   static create(props: ClientRecordProps): ClientRecord {
@@ -66,7 +69,12 @@ export class ClientRecord extends AggregateRoot {
     }
     const record = new ClientRecord(props);
     record.addDomainEvent(
-      new OnboardingSubmittedEvent(record.id, record._rulesVersion, record._computedTier),
+      new OnboardingSubmittedEvent(
+        record.id,
+        record._rulesVersion,
+        record._computedTier,
+        record._relationship_manager || record._submittedBy,
+      ),
     );
     return record;
   }
@@ -131,5 +139,8 @@ export class ClientRecord extends AggregateRoot {
   }
   get submittedBy(): string {
     return this._submittedBy;
+  }
+  get relationship_manager(): string | null {
+    return this._relationship_manager;
   }
 }
