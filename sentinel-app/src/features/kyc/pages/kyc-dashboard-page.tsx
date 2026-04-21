@@ -32,13 +32,23 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
-import { AlertTriangle, Edit } from "lucide-react"
+import { AlertTriangle, Edit, CheckCircle } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import type { KycStatus } from "@/shared/types/onboarding.types"
-import type { KycRecord } from "@/shared/types/kyc.types"
+import type { components } from "@/shared/api/generated/sentinel-api.types"
 
+type KycRecord = components["schemas"]["KycCaseView"]
+
+// Quick inline components for tabs
 export function Component() {
-  const { data, isLoading } = useKycQueue({ page: 1 })
+  const [activeTab, setActiveTab] = useState<string>("all")
+
+  const { data, isLoading } = useKycQueue({
+    page: 1,
+    status: activeTab === "edd" ? "ENHANCED_DUE_DILIGENCE" : undefined,
+  })
+
   const updateKyc = useUpdateKyc()
   const [editingRecord, setEditingRecord] = useState<KycRecord | null>(null)
   const [newStatus, setNewStatus] = useState<KycStatus>("PENDING")
@@ -48,9 +58,11 @@ export function Component() {
     if (!editingRecord) return
     try {
       await updateKyc.mutateAsync({
-        client_id: editingRecord.client_id,
-        kyc_status: newStatus,
-        reason,
+        id: editingRecord.id,
+        data: {
+          status: newStatus,
+          notes: reason,
+        },
       })
       toast.success("KYC status updated")
       setEditingRecord(null)
@@ -62,14 +74,38 @@ export function Component() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold">KYC Dashboard</h1>
         <p className="text-muted-foreground">
-          Manage KYC statuses and enhanced due diligence
+          Manage KYC statuses and analyze pending enhanced due diligence (EDD)
+          cases.
         </p>
       </div>
 
       <Separator />
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="all">All Cases</TabsTrigger>
+          <TabsTrigger value="edd" className="flex items-center gap-2">
+            <AlertTriangle className="size-4" />
+            EDD Queue
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="all" className="mt-0 outline-none">
+          {/* Table is shared */}
+        </TabsContent>
+        <TabsContent value="edd" className="mt-0 outline-none">
+          <Alert className="text-warning-foreground mb-4 border-warning/50 bg-warning/10">
+            <AlertTriangle className="size-4 !text-warning" />
+            <AlertDescription className="ml-2 font-medium">
+              Clients requiring Enhanced Due Diligence explicitly need a
+              Compliance Officer&apos;s thorough manual review and explicit
+              approval.
+            </AlertDescription>
+          </Alert>
+        </TabsContent>
+      </Tabs>
 
       <Table>
         <TableHeader>
@@ -77,10 +113,12 @@ export function Component() {
             <TableHead>Client ID</TableHead>
             <TableHead>Client Name</TableHead>
             <TableHead>Current Status</TableHead>
-            <TableHead>Requires EDD</TableHead>
+            <TableHead>Requirements</TableHead>
             <TableHead>Updated By</TableHead>
             <TableHead>Updated At</TableHead>
-            <TableHead className="w-12" />
+            <TableHead className="w-24 border-none text-right">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -96,7 +134,10 @@ export function Component() {
               ))
             : data?.items.map((record) => (
                 <TableRow key={record.id}>
-                  <TableCell className="font-mono text-sm">
+                  <TableCell
+                    className="max-w-[120px] truncate font-mono text-sm"
+                    title={record.client_id}
+                  >
                     {record.client_id}
                   </TableCell>
                   <TableCell className="font-medium">
@@ -106,33 +147,67 @@ export function Component() {
                     <KycStatusBadge status={record.kyc_status} />
                   </TableCell>
                   <TableCell>
-                    {record.requires_edd && (
+                    {record.requires_edd ? (
                       <Alert className="inline-flex items-center gap-1 border-0 bg-transparent p-0">
                         <AlertTriangle className="size-4 text-warning" />
-                        <AlertDescription className="text-sm">
+                        <AlertDescription className="text-sm font-semibold text-warning">
                           EDD Required
                         </AlertDescription>
                       </Alert>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        Standard
+                      </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm">{record.updated_by}</TableCell>
+                  <TableCell
+                    className="max-w-[120px] truncate text-sm"
+                    title={record.updated_by}
+                  >
+                    {record.updated_by}
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(record.updated_at).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setEditingRecord(record)
-                        setNewStatus(record.kyc_status)
-                      }}
-                    >
-                      <Edit data-icon="inline-start" />
-                    </Button>
+                  <TableCell className="text-right">
+                    {record.kyc_status === "ENHANCED_DUE_DILIGENCE" ? (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="text-warning-foreground w-full bg-warning hover:bg-warning/80"
+                        onClick={() => {
+                          setEditingRecord(record)
+                          setNewStatus("APPROVED")
+                        }}
+                      >
+                        <CheckCircle className="mr-2 size-4" />
+                        Approve EDD
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setEditingRecord(record)
+                          setNewStatus(record.kyc_status)
+                        }}
+                      >
+                        <Edit data-icon="inline-start" /> Modify
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
+          {data?.items.length === 0 && !isLoading && (
+            <TableRow>
+              <TableCell
+                colSpan={7}
+                className="h-24 text-center text-muted-foreground"
+              >
+                No records found for the current query.
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
 

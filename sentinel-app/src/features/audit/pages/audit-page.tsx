@@ -33,7 +33,7 @@ export function Component() {
   const { data, isLoading } = useAuditLog({
     page,
     pageSize: 25,
-    entity_id: debouncedEntity || undefined,
+    aggregate_id: debouncedEntity || undefined,
   })
 
   return (
@@ -49,7 +49,7 @@ export function Component() {
         <div className="relative flex-1">
           <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Filter by entity ID..."
+            placeholder="Filter by aggregate ID..."
             value={entityFilter}
             onChange={(e) => setEntityFilter(e.target.value)}
             className="pl-9"
@@ -64,10 +64,10 @@ export function Component() {
           <TableHeader>
             <TableRow>
               <TableHead>Timestamp</TableHead>
-              <TableHead>Action</TableHead>
-              <TableHead>Entity</TableHead>
-              <TableHead>Actor</TableHead>
-              <TableHead>Role</TableHead>
+              <TableHead>Event Type</TableHead>
+              <TableHead>Aggregate ID</TableHead>
+              <TableHead>Aggregate Type</TableHead>
+              <TableHead>Performed By</TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -85,17 +85,19 @@ export function Component() {
               : data?.items.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(entry.timestamp).toLocaleString()}
+                      {new Date(entry.created_at).toLocaleString()}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{entry.action}</Badge>
+                      <Badge variant="outline">{entry.event_type}</Badge>
                     </TableCell>
                     <TableCell className="font-mono text-sm">
-                      {entry.entity_id}
+                      {entry.aggregate_id}
                     </TableCell>
-                    <TableCell className="text-sm">{entry.actor}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {entry.actor_role}
+                      {entry.aggregate_type}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {entry.performed_by}
                     </TableCell>
                     <TableCell>
                       <Button
@@ -146,24 +148,14 @@ export function Component() {
           </DialogHeader>
 
           {selectedEntry && (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-1">
               <div>
                 <h4 className="mb-2 text-sm font-medium text-muted-foreground">
-                  Before
+                  Payload
                 </h4>
                 <pre className="overflow-auto rounded-md bg-muted p-4 text-xs">
-                  {selectedEntry.before
-                    ? JSON.stringify(selectedEntry.before, null, 2)
-                    : "—"}
-                </pre>
-              </div>
-              <div>
-                <h4 className="mb-2 text-sm font-medium text-muted-foreground">
-                  After
-                </h4>
-                <pre className="overflow-auto rounded-md bg-muted p-4 text-xs">
-                  {selectedEntry.after
-                    ? JSON.stringify(selectedEntry.after, null, 2)
+                  {selectedEntry.payload
+                    ? JSON.stringify(selectedEntry.payload, null, 2)
                     : "—"}
                 </pre>
               </div>

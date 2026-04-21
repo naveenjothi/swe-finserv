@@ -8,23 +8,20 @@ export type AuditAction =
 
 export interface AuditEntry {
   id: string
-  entity_type: string
-  entity_id: string
-  action: AuditAction
-  actor: string
-  actor_role: string
-  timestamp: string
-  before: Record<string, unknown> | null
-  after: Record<string, unknown> | null
-  metadata?: Record<string, unknown>
+  aggregate_id: string
+  aggregate_type: string
+  event_type: string
+  payload: Record<string, unknown>
+  performed_by: string
+  created_at: string
 }
 
 export interface AuditFilters {
   page?: number
   pageSize?: number
-  entity_id?: string
-  action?: AuditAction
-  actor?: string
+  aggregate_id?: string
+  event_type?: string
+  performed_by?: string
   from_date?: string
   to_date?: string
 }

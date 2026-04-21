@@ -11,11 +11,6 @@ export function RoleGuard({
   children: ReactNode
 }) {
   const role = useAuthStore((s) => s.role)
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated())
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
 
   if (!role || !allowed.includes(role)) {
     return <Navigate to="/" replace />

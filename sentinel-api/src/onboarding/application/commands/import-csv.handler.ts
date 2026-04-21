@@ -6,6 +6,7 @@ import { RulesCacheService } from '../../../risk-classification/infrastructure/c
 import { RiskTier } from '../../../risk-classification/domain/value-objects/risk-tier.vo';
 import { ClassificationMismatchDetectedEvent } from '../../../risk-classification/domain/events/classification-mismatch-detected.event';
 import { ClientRecord } from '../../domain/entities/client-record.entity';
+import { DomainEvent } from '../../../shared/domain/domain-event';
 import {
   CLIENT_RECORD_REPOSITORY,
   ClientRecordRepositoryPort,
@@ -13,6 +14,9 @@ import {
 import { ImportCsvCommand, ImportCsvResult, CsvImportRow } from './import-csv.command';
 
 interface CsvRow {
+  client_id: string;
+  branch: string;
+  onboarding_date: string;
   client_name: string;
   client_type: string;
   pep_status: string;
@@ -21,7 +25,11 @@ interface CsvRow {
   country_of_tax_residence: string;
   annual_income: string;
   source_of_funds: string;
-  declared_tier?: string;
+  risk_classification?: string;
+  kyc_status?: string;
+  id_verification_date?: string;
+  relationship_manager?: string;
+  documentation_complete?: string;
 }
 
 const REQUIRED_COLUMNS = [
@@ -85,6 +93,7 @@ export class ImportCsvHandler implements ICommandHandler<ImportCsvCommand, Impor
 
     const ruleSet = await this.cache.getActive();
     const entities: ClientRecord[] = [];
+    const domainEvents: DomainEvent[] = [];
     const resultRows: CsvImportRow[] = [];
 
     for (let i = 0; i < rows.length; i++) {
@@ -100,9 +109,8 @@ export class ImportCsvHandler implements ICommandHandler<ImportCsvCommand, Impor
       };
 
       const classification = this.engine.classify(classifiable, ruleSet.payload);
-      const declaredTier = parseDeclaredTier(row.declared_tier);
+      const declaredTier = parseDeclaredTier(row.risk_classification);
       const mismatch = declaredTier !== null && declaredTier !== classification.computed_tier;
-
       const entity = ClientRecord.create({
         clientName: row.client_name,
         clientType: row.client_type,
@@ -119,9 +127,11 @@ export class ImportCsvHandler implements ICommandHandler<ImportCsvCommand, Impor
         declaredTier,
         mismatch,
         submittedBy: command.submittedBy,
+        relationship_manager: row.relationship_manager ?? null,
       });
 
       entities.push(entity);
+      domainEvents.push(...entity.pullDomainEvents());
       resultRows.push({
         row: i + 1,
         client_name: row.client_name,
@@ -134,11 +144,10 @@ export class ImportCsvHandler implements ICommandHandler<ImportCsvCommand, Impor
 
     const saved = await this.repo.saveBatch(entities);
 
-    // Publish events
-    for (const entity of saved) {
-      for (const event of entity.pullDomainEvents()) {
-        this.eventBus.publish(event);
-      }
+    // Publish events collected before persistence. saveBatch returns rehydrated
+    // entity instances and does not preserve in-memory domain events.
+    for (const event of domainEvents) {
+      this.eventBus.publish(event);
     }
 
     // Emit mismatch events

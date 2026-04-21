@@ -16,30 +16,36 @@ import {
   UserPlus,
   Upload,
   Users,
-  Shield,
+  Landmark,
   FileText,
   Settings,
-  LogOut,
 } from "lucide-react"
 import { Link, useLocation } from "react-router"
 import { useAuthStore } from "@/stores/auth.store"
 import { useOfflineStore } from "@/stores/offline.store"
 import { RoleGate } from "@/components/feedback/role-gate"
-import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { ROLE_LABELS } from "@/shared/constants/roles"
 
 export function AppSidebar() {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
-  const logout = useAuthStore((s) => s.logout)
+  const role = useAuthStore((s) => s.role)
   const pendingCount = useOfflineStore((s) => s.pendingRecords.length)
 
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <Shield className="size-6 text-primary" />
-          <span className="text-lg font-semibold text-primary">SENTINEL</span>
+        <div className="flex items-start gap-2">
+          <Landmark className="mt-0.5 size-5 text-sidebar-primary" />
+          <div className="leading-tight">
+            <div className="text-sm font-bold text-sidebar-primary">
+              Halcyon Capital Partners
+            </div>
+            <div className="text-xs font-normal text-sidebar-foreground/80">
+              SENTINEL Onboarding
+            </div>
+          </div>
         </div>
       </SidebarHeader>
 
@@ -48,14 +54,19 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === "/"}>
-                  <Link to="/">
-                    <LayoutDashboard />
-                    <span>Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <RoleGate allowed={["COMPLIANCE_OFFICER", "AUDITOR"]}>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === "/"}
+                  >
+                    <Link to="/">
+                      <LayoutDashboard />
+                      <span>Dashboard</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </RoleGate>
 
               <RoleGate allowed={["RM"]}>
                 <SidebarMenuItem>
@@ -74,17 +85,19 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               </RoleGate>
 
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={location.pathname === "/onboarding/import"}
-                >
-                  <Link to="/onboarding/import">
-                    <Upload />
-                    <span>Import CSV</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <RoleGate allowed={["COMPLIANCE_OFFICER"]}>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === "/onboarding/import"}
+                  >
+                    <Link to="/onboarding/import">
+                      <Upload />
+                      <span>Import CSV</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </RoleGate>
 
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -105,7 +118,7 @@ export function AppSidebar() {
                     isActive={location.pathname === "/kyc"}
                   >
                     <Link to="/kyc">
-                      <Shield />
+                      <Landmark />
                       <span>KYC Queue</span>
                     </Link>
                   </SidebarMenuButton>
@@ -149,16 +162,11 @@ export function AppSidebar() {
         {user && (
           <div className="flex flex-col gap-2">
             <div className="text-sm font-medium">{user.name}</div>
-            <div className="text-xs text-muted-foreground">{user.role}</div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="justify-start"
-              onClick={logout}
-            >
-              <LogOut data-icon="inline-start" />
-              Sign Out
-            </Button>
+            {role && (
+              <div className="text-xs text-muted-foreground">
+                {ROLE_LABELS[role]}
+              </div>
+            )}
           </div>
         )}
       </SidebarFooter>

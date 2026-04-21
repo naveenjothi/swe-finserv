@@ -46,12 +46,16 @@ export class SubmitOnboardingHandler implements ICommandHandler<
       declaredTier: command.declaredTier,
       mismatch,
       submittedBy: command.submittedBy,
+      relationship_manager: command.submittedBy,
     });
+
+    const domainEvents = entity.pullDomainEvents();
 
     const saved = await this.repo.save(entity);
 
-    // Publish domain events
-    for (const event of saved.pullDomainEvents()) {
+    // Publish domain events collected before persistence. The repository rehydrates
+    // a new entity instance from ORM rows, so in-memory events are not carried over.
+    for (const event of domainEvents) {
       this.eventBus.publish(event);
     }
 

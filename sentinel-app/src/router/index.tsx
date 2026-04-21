@@ -50,5 +50,3 @@ export const router = createBrowserRouter([
     ],
   },
 ])
-
-export { RoleGuard }

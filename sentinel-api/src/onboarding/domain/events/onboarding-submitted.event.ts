@@ -6,6 +6,7 @@ export class OnboardingSubmittedEvent extends BaseDomainEvent {
     clientRecordId: string,
     public readonly rulesVersion: string,
     public readonly computedTier: RiskTier,
+    public readonly createdBy: string | null,
   ) {
     super(clientRecordId, 'onboarding.submitted');
   }

@@ -1,7 +1,9 @@
 import { useParams, Link } from "react-router"
 import { useClient } from "@/features/onboarding/api/onboarding.api"
 import { RiskBadge } from "@/features/onboarding/components/risk-badge"
+import { KycStatusBadge } from "@/features/kyc/components/kyc-status-badge"
 import { RoleGate } from "@/components/feedback/role-gate"
+import type { KycStatus } from "@/shared/types/onboarding.types"
 import {
   Card,
   CardContent,
@@ -9,12 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Edit } from "lucide-react"
+import { Edit, AlertTriangle } from "lucide-react"
 
 export function Component() {
   const { id } = useParams<{ id: string }>()
@@ -64,14 +67,25 @@ export function Component() {
           <TabsTrigger value="corrections">Corrections</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-4 flex flex-col gap-6">
+          {client.requires_edd && client.kyc_status !== "APPROVED" && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>EDD Approval Required</AlertTitle>
+              <AlertDescription>
+                This record is incomplete. Enhanced Due Diligence approval from
+                a Compliance Officer is required before client activation.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Client Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <dl className="grid grid-cols-2 gap-3 text-sm">
+                <dl className="grid grid-cols-[1fr_2fr] gap-x-4 gap-y-3 text-sm">
                   <dt className="text-muted-foreground">Type</dt>
                   <dd>{client.client_type}</dd>
                   <dt className="text-muted-foreground">Country</dt>
@@ -90,10 +104,15 @@ export function Component() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Risk & Compliance</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Risk & Compliance</CardTitle>
+                  {client.kyc_status && (
+                    <KycStatusBadge status={client.kyc_status as KycStatus} />
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
-                <dl className="grid grid-cols-2 gap-3 text-sm">
+                <dl className="mb-4 grid grid-cols-[1fr_2fr] gap-x-4 gap-y-3 text-sm">
                   <dt className="text-muted-foreground">PEP Status</dt>
                   <dd>{client.pep_status ? "Yes" : "No"}</dd>
                   <dt className="text-muted-foreground">Sanctions Match</dt>
@@ -110,23 +129,41 @@ export function Component() {
                   )}
                 </dl>
 
-                {client.triggered_rules.length > 0 && (
-                  <>
-                    <Separator className="my-4" />
-                    <div>
-                      <CardDescription className="mb-2">
-                        Triggered Rules
-                      </CardDescription>
-                      <div className="flex flex-wrap gap-1">
-                        {client.triggered_rules.map((rule) => (
-                          <Badge key={rule.code} variant="outline">
-                            {rule.code}: {rule.description}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </>
+                {client.requires_edd && (
+                  <RoleGate allowed={["COMPLIANCE_OFFICER"]}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="my-2 text-primary"
+                    >
+                      <Link to="/kyc">Go to KYC Dashboard</Link>
+                    </Button>
+                  </RoleGate>
                 )}
+
+                {client.triggered_rules &&
+                  client.triggered_rules.length > 0 && (
+                    <>
+                      <Separator className="my-4" />
+                      <div>
+                        <p className="mb-2 text-sm font-medium">
+                          Triggered Rules
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {client.triggered_rules.map((rule) => (
+                            <Badge
+                              key={rule.code}
+                              variant="secondary"
+                              className="text-xs font-normal"
+                            >
+                              {rule.code}: {rule.description}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
               </CardContent>
             </Card>
           </div>

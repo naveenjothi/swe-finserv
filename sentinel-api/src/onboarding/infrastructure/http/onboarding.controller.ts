@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   ParseUUIDPipe,
   Post,
@@ -14,6 +15,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaginatedResult, PaginationDto } from '../../../shared/application/pagination.dto';
+import { Role } from '../../../shared/constants/roles.enum';
+import { Roles } from '../../../shared/infrastructure/guards/roles.decorator';
 import { SubmitOnboardingDto } from '../../application/dto/submit-onboarding.dto';
 import {
   SubmitOnboardingCommand,
@@ -35,8 +38,13 @@ export class OnboardingController {
   ) {}
 
   @Post('onboarding')
+  @Roles(Role.RM)
   @ApiOperation({ summary: 'Submit a client onboarding record' })
-  async submit(@Body() dto: SubmitOnboardingDto): Promise<SubmitOnboardingResult> {
+  async submit(
+    @Body() dto: SubmitOnboardingDto,
+    @Headers('x-user-name') userName?: string,
+  ): Promise<SubmitOnboardingResult> {
+    const performedBy = userName || 'system';
     return this.commandBus.execute(
       new SubmitOnboardingCommand(
         dto.client_name,
@@ -49,13 +57,14 @@ export class OnboardingController {
           annual_income: dto.annual_income,
           source_of_funds: dto.source_of_funds,
         },
-        'system', // TODO: extract from JWT when auth is wired
+        performedBy, // Now driven by the auth/user context
         dto.declared_tier ?? null,
       ),
     );
   }
 
   @Post('onboarding/import')
+  @Roles(Role.COMPLIANCE_OFFICER)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Import client records from CSV with mismatch detection' })
@@ -65,17 +74,23 @@ export class OnboardingController {
       properties: { file: { type: 'string', format: 'binary' } },
     },
   })
-  async importCsv(@UploadedFile() file: Express.Multer.File): Promise<ImportCsvResult> {
-    return this.commandBus.execute(new ImportCsvCommand(file.buffer, 'system'));
+  async importCsv(
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('x-user-name') userName?: string,
+  ): Promise<ImportCsvResult> {
+    const performedBy = userName || 'system';
+    return this.commandBus.execute(new ImportCsvCommand(file.buffer, performedBy));
   }
 
   @Get('clients')
+  @Roles(Role.RM, Role.COMPLIANCE_OFFICER, Role.AUDITOR)
   @ApiOperation({ summary: 'List all client onboarding records (paginated)' })
   async list(@Query() pagination: PaginationDto): Promise<PaginatedResult<ClientView>> {
     return this.queryBus.execute(new GetClientsQuery(pagination.skip, pagination.take));
   }
 
   @Get('clients/:id')
+  @Roles(Role.RM, Role.COMPLIANCE_OFFICER, Role.AUDITOR)
   @ApiOperation({ summary: 'Get a single client onboarding record by ID' })
   async getById(@Param('id', ParseUUIDPipe) id: string): Promise<ClientDetailView> {
     return this.queryBus.execute(new GetClientByIdQuery(id));

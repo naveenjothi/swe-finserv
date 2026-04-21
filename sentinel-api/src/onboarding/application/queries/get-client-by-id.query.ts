@@ -15,6 +15,7 @@ export interface ClientDetailView {
   computed_tier: string;
   triggered_rules: Array<{ tier: string; code: string; description: string }>;
   requires_edd: boolean;
+  kyc_status: string | null;
   rules_version: string;
   declared_tier: string | null;
   mismatch: boolean;

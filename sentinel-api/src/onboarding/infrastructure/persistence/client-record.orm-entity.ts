@@ -53,6 +53,9 @@ export class ClientRecordOrmEntity {
   @Column({ type: 'varchar', length: 128, name: 'submitted_by' })
   submittedBy!: string;
 
+  @Column({ type: 'varchar', length: 128, name: 'relationship_manager', nullable: true })
+  relationshipManager!: string | null;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt!: Date;
 }

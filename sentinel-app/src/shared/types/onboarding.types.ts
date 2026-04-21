@@ -13,6 +13,8 @@ export type SourceOfFunds =
 export type KycStatus =
   | "APPROVED"
   | "PENDING"
+  | "DOCUMENTS_REQUESTED"
+  | "UNDER_REVIEW"
   | "REJECTED"
   | "ENHANCED_DUE_DILIGENCE"
 
@@ -26,9 +28,11 @@ export interface ClientListItem {
   computed_tier: RiskTier
   requires_edd: boolean
   mismatch: boolean
+  kyc_status: string
   rules_version: string
   submitted_by: string
   created_at: string
+  relationship_manager: string
 }
 
 /** GET /api/clients/:id — detail view */
@@ -45,6 +49,7 @@ export interface ClientDetail {
   computed_tier: RiskTier
   triggered_rules: Array<{ tier: string; code: string; description: string }>
   requires_edd: boolean
+  kyc_status: string | null
   rules_version: string
   declared_tier: RiskTier | null
   mismatch: boolean

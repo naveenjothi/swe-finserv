@@ -11,6 +11,14 @@ const statusConfig: Record<KycStatus, { label: string; className: string }> = {
     label: "Pending",
     className: "bg-warning text-white",
   },
+  DOCUMENTS_REQUESTED: {
+    label: "Docs Requested",
+    className: "bg-warning/80 text-white",
+  },
+  UNDER_REVIEW: {
+    label: "Under Review",
+    className: "bg-primary-light text-white",
+  },
   REJECTED: {
     label: "Rejected",
     className: "bg-risk-high text-white",

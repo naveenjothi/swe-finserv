@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { api } from "@/shared/api/client"
-import type { RulesPayload, RulesVersionInfo } from "@/shared/types/rules.types"
+import type { components } from "@/shared/api/generated/sentinel-api.types"
+
+type RulesVersionInfoView = components["schemas"]["RulesVersionInfoView"]
+type ActiveRulesView = components["schemas"]["ActiveRulesView"]
+type PublishRuleSetRequest = components["schemas"]["PublishRuleSetRequest"]
+type PublishRuleSetResponse = components["schemas"]["PublishRuleSetResponse"]
 
 export const rulesKeys = {
   all: ["rules"] as const,
@@ -11,22 +16,22 @@ export const rulesKeys = {
 export function useRulesVersions() {
   return useQuery({
     queryKey: rulesKeys.versions(),
-    queryFn: () => api.get("rules/versions").json<RulesVersionInfo[]>(),
+    queryFn: () => api.get("rules/versions").json<RulesVersionInfoView[]>(),
   })
 }
 
 export function useCurrentRules() {
   return useQuery({
     queryKey: rulesKeys.current(),
-    queryFn: () => api.get("rules/current").json<RulesPayload>(),
+    queryFn: () => api.get("rules/active").json<ActiveRulesView>(),
   })
 }
 
 export function useUploadRules() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: RulesPayload) =>
-      api.post("rules", { json: payload }).json<RulesVersionInfo>(),
+    mutationFn: (payload: PublishRuleSetRequest) =>
+      api.post("rules", { json: payload }).json<PublishRuleSetResponse>(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: rulesKeys.all })
     },

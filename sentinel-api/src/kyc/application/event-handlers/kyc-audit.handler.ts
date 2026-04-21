@@ -18,6 +18,10 @@ export class KycAuditHandler implements IEventHandler<KycStatusChangedEvent> {
   ) {}
 
   async handle(event: KycStatusChangedEvent): Promise<void> {
+    console.log('KycStatusChangedEvent', event);
+    const isEddApproval =
+      event.previousStatus === 'ENHANCED_DUE_DILIGENCE' && event.newStatus === 'APPROVED';
+
     const entry = AuditEntry.create({
       aggregateId: event.aggregateId,
       aggregateType: 'KycCase',
@@ -27,6 +31,7 @@ export class KycAuditHandler implements IEventHandler<KycStatusChangedEvent> {
         previousStatus: event.previousStatus,
         newStatus: event.newStatus,
         changedBy: event.changedBy,
+        ...(isEddApproval && { edd_approval: true }),
       },
       performedBy: event.changedBy,
     });

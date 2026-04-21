@@ -28,6 +28,7 @@ export class OpenKycCaseHandler implements ICommandHandler<OpenKycCaseCommand, O
       notes: null,
       documents: [],
       createdBy: command.createdBy,
+      ...(command.initialStatus && { status: command.initialStatus }),
     });
 
     const saved = await this.repo.save(kycCase);

@@ -1,45 +1,60 @@
 import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import {
-  CLIENT_RECORD_REPOSITORY,
-  ClientRecordRepositoryPort,
-} from '../../domain/ports/client-record.repository.port';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { ClientDetailView, GetClientByIdQuery } from './get-client-by-id.query';
 
 @QueryHandler(GetClientByIdQuery)
 export class GetClientByIdHandler implements IQueryHandler<GetClientByIdQuery, ClientDetailView> {
   constructor(
-    @Inject(CLIENT_RECORD_REPOSITORY)
-    private readonly repo: ClientRecordRepositoryPort,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   async execute(query: GetClientByIdQuery): Promise<ClientDetailView> {
-    const record = await this.repo.findById(query.id);
-    if (!record) {
+    const rows = await this.dataSource.query(
+      `
+      SELECT 
+        c.*,
+        k.status as kyc_status
+      FROM client_records c
+      LEFT JOIN kyc_cases k ON k.client_record_id = c.id
+      WHERE c.id = $1
+      `,
+      [query.id],
+    );
+
+    if (rows.length === 0) {
       throw new NotFoundException(`Client record ${query.id} not found`);
     }
+    const r = rows[0];
+
+    // Parse json columns if they come as string
+    const triggeredRules =
+      typeof r.triggered_rules === 'string' ? JSON.parse(r.triggered_rules) : r.triggered_rules;
+
     return {
-      id: record.id,
-      client_name: record.clientName,
-      client_type: record.clientType,
-      pep_status: record.pepStatus,
-      sanctions_screening_match: record.sanctionsScreeningMatch,
-      adverse_media_flag: record.adverseMediaFlag,
-      country_of_tax_residence: record.countryOfTaxResidence,
-      annual_income: record.annualIncome,
-      source_of_funds: record.sourceOfFunds,
-      computed_tier: record.computedTier,
-      triggered_rules: record.triggeredRules.map((r) => ({
-        tier: r.tier,
-        code: r.code,
-        description: r.description,
-      })),
-      requires_edd: record.requiresEdd,
-      rules_version: record.rulesVersion,
-      declared_tier: record.declaredTier,
-      mismatch: record.mismatch,
-      submitted_by: record.submittedBy,
-      created_at: record.createdAt.toISOString(),
+      id: r.id,
+      client_name: r.client_name,
+      client_type: r.client_type,
+      pep_status: r.pep_status,
+      sanctions_screening_match: r.sanctions_screening_match,
+      adverse_media_flag: r.adverse_media_flag,
+      country_of_tax_residence: r.country_of_tax_residence,
+      annual_income: r.annual_income,
+      source_of_funds: r.source_of_funds,
+      computed_tier: r.computed_tier,
+      triggered_rules: triggeredRules,
+      requires_edd: r.requires_edd,
+      kyc_status: r.kyc_status || null,
+      rules_version: r.rules_version,
+      declared_tier: r.declared_tier,
+      mismatch: r.mismatch,
+      submitted_by: r.submitted_by,
+      created_at:
+        r.created_at instanceof Date
+          ? r.created_at.toISOString()
+          : new Date(r.created_at).toISOString(),
     };
   }
 }

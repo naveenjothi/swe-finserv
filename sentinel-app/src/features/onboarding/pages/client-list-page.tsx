@@ -44,6 +44,7 @@ export function Component() {
             <TableHead>EDD</TableHead>
             <TableHead>Mismatch</TableHead>
             <TableHead>Submitted By</TableHead>
+            <TableHead>Relationship Manager</TableHead>
             <TableHead>Date</TableHead>
             <TableHead className="w-12" />
           </TableRow>
@@ -69,8 +70,11 @@ export function Component() {
                     <RiskBadge tier={client.computed_tier} />
                   </TableCell>
                   <TableCell>
-                    {client.requires_edd ? (
-                      <Badge variant="destructive">Yes</Badge>
+                    {client.computed_tier === "HIGH" &&
+                    client.kyc_status !== "APPROVED" ? (
+                      <Badge variant="destructive">EDD Pending</Badge>
+                    ) : client.requires_edd ? (
+                      <Badge variant="secondary">EDD</Badge>
                     ) : (
                       <span className="text-muted-foreground">No</span>
                     )}
@@ -84,6 +88,9 @@ export function Component() {
                   </TableCell>
                   <TableCell className="text-sm">
                     {client.submitted_by}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {client.relationship_manager}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(client.created_at).toLocaleDateString()}

@@ -8,6 +8,10 @@ import type {
 } from "@/shared/types/rules.types"
 import { classify } from "@/shared/lib/rules-engine"
 import { api } from "@/shared/api/client"
+import type { components } from "@/shared/api/generated/sentinel-api.types"
+
+type RulesVersionView = components["schemas"]["RulesVersionView"]
+type ActiveRulesView = components["schemas"]["ActiveRulesView"]
 
 const STALE_THRESHOLD_MS = 60 * 60 * 1000 // 1 hour
 
@@ -62,20 +66,17 @@ export const useRulesStore = create<RulesState>()(
           if (response.status === 304) return
           if (!response.ok) return
 
-          const versionInfo = await response.json<{
-            version: string
-            valid_from: string
-          }>()
+          const versionInfo = await response.json<RulesVersionView>()
 
           if (versionInfo.version === version) return
 
           const rulesResponse = await api
-            .get("rules/current")
-            .json<RulesPayload>()
+            .get("rules/active")
+            .json<ActiveRulesView>()
 
           set({
             version: rulesResponse.version,
-            payload: rulesResponse,
+            payload: rulesResponse.payload as RulesPayload,
             cachedAt: Date.now(),
           })
         } catch {
@@ -90,7 +91,7 @@ export const useRulesStore = create<RulesState>()(
     }),
     {
       name: "sentinel_rules_cache",
-      storage: idbStorage as any,
+      storage: idbStorage,
       partialize: (state) => ({
         version: state.version,
         payload: state.payload,

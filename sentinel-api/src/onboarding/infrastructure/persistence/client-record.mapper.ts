@@ -20,6 +20,7 @@ export class ClientRecordMapper {
       declaredTier: orm.declaredTier,
       mismatch: orm.mismatch,
       submittedBy: orm.submittedBy,
+      relationship_manager: orm.relationshipManager,
       createdAt: orm.createdAt,
     });
   }
@@ -42,6 +43,7 @@ export class ClientRecordMapper {
     orm.declaredTier = entity.declaredTier;
     orm.mismatch = entity.mismatch;
     orm.submittedBy = entity.submittedBy;
+    orm.relationshipManager = entity.relationship_manager;
     orm.createdAt = entity.createdAt;
     return orm;
   }

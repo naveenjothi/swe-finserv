@@ -53,7 +53,7 @@ graph TB
         IDB[("IndexedDB<br/><i>Offline records,<br/>rules cache</i>")]
     end
 
-    API["SENTINEL API<br/><i>NestJS Backend<br/>:3000</i>"]
+    API["SENTINEL API<br/><i>NestJS Backend<br/>:8000</i>"]
 
     SPA -- "HTTPS / REST" --> API
     SPA -- "Cache API" --> SW
@@ -981,7 +981,7 @@ graph LR
 
 | Variable             | Description                 | Example                     |
 | -------------------- | --------------------------- | --------------------------- |
-| `VITE_API_URL`       | Backend API base URL        | `http://localhost:3000/api` |
+| `VITE_API_URL`       | Backend API base URL        | `http://localhost:8000/api` |
 | `VITE_APP_TITLE`     | Application title           | `SENTINEL`                  |
 | `VITE_POLL_INTERVAL` | Rules polling interval (ms) | `3600000`                   |
 

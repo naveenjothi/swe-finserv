@@ -23,10 +23,31 @@ npm run migration:run
 npm run start:dev
 ```
 
-- API: http://localhost:3000
-- Swagger: http://localhost:3000/docs
+- API: http://localhost:8000
+- Swagger: http://localhost:8000/docs
 - pgAdmin: http://localhost:5050
 - RabbitMQ UI: http://localhost:15672
+
+## Local auth role switching (POC)
+
+Authentication is mocked in local development. You can switch active user role per request with either header:
+
+- `Authorization: Bearer RM`
+- `Authorization: Bearer COMPLIANCE_OFFICER`
+- `Authorization: Bearer AUDITOR`
+
+Or use `x-user-role` with the same values.
+
+Optional identity headers:
+
+- `x-user-id`
+- `x-user-name`
+
+Example:
+
+```bash
+curl -H "Authorization: Bearer AUDITOR" http://localhost:8000/api/audit
+```
 
 ## Tests
 
