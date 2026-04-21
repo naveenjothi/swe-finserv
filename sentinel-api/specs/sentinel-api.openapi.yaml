@@ -1,0 +1,1004 @@
+openapi: 3.0.3
+info:
+  title: SENTINEL API Contract
+  version: 0.1.0
+  description: |
+    Spec-driven API contract for SENTINEL backend (NestJS modular monolith).
+
+    This file is intended to be the source-of-truth contract for backend/frontend integration,
+    test generation, and API review.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Onboarding
+  - name: Rules Admin
+  - name: KYC
+  - name: Audit
+  - name: Admin
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/onboarding:
+    post:
+      tags: [Onboarding]
+      summary: Submit a client onboarding record
+      description: RM-only endpoint. Computes risk tier and persists immutable onboarding record.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitOnboardingRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitOnboardingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/onboarding/import:
+    post:
+      tags: [Onboarding]
+      summary: Import client records from CSV
+      description: Compliance Officer-only endpoint. Upload CSV via multipart form data.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Import completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportCsvResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/clients:
+    get:
+      tags: [Onboarding]
+      summary: List client onboarding records
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedClientView'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/clients/{id}:
+    get:
+      tags: [Onboarding]
+      summary: Get onboarding record by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Client detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDetailView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/rules/active:
+    get:
+      tags: [Rules Admin]
+      summary: Get currently active rule set
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Active rules
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveRulesView'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/rules/version:
+    get:
+      tags: [Rules Admin]
+      summary: Get active rules version
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Active version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesVersionView'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/rules/versions:
+    get:
+      tags: [Rules Admin]
+      summary: Get historical rule versions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Version history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RulesVersionInfoView'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/rules:
+    post:
+      tags: [Rules Admin]
+      summary: Publish a new rule set manually
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRuleSetRequest'
+      responses:
+        '201':
+          description: Rule set published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishRuleSetResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/rules/classify:
+    post:
+      tags: [Rules Admin]
+      summary: Classify a record against active rules (dry run)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassifiableRecord'
+      responses:
+        '201':
+          description: Classification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassifyRecordResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/rules/fca-webhook:
+    post:
+      tags: [Rules Admin]
+      summary: Receive FCA regulatory update webhook
+      description: Public webhook endpoint in current implementation (no role guard).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FcaWebhookRequest'
+      responses:
+        '201':
+          description: Rule set accepted/published from webhook payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishRuleSetResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/kyc:
+    post:
+      tags: [KYC]
+      summary: Open a new KYC case
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenKycCaseRequest'
+      responses:
+        '201':
+          description: KYC case opened
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenKycCaseResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    get:
+      tags: [KYC]
+      summary: List KYC cases
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/KycStatus'
+      responses:
+        '200':
+          description: Paginated KYC cases
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedKycCaseView'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/kyc/{id}:
+    get:
+      tags: [KYC]
+      summary: Get KYC case by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: KYC case detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KycCaseView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/kyc/{id}/status:
+    patch:
+      tags: [KYC]
+      summary: Transition KYC case status
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionKycRequest'
+      responses:
+        '200':
+          description: KYC status transitioned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransitionKycResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/audit:
+    get:
+      tags: [Audit]
+      summary: List audit entries
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated audit entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditEntryView'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/audit/{aggregateId}:
+    get:
+      tags: [Audit]
+      summary: Get audit trail for aggregate
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: aggregateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated audit entries for aggregate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditEntryView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/admin/backfill:
+    post:
+      tags: [Admin]
+      summary: Backfill missing audit entries and KYC cases
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Backfill execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackfillResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Role
+      description: |
+        POC mock auth. Use one of: RM, COMPLIANCE_OFFICER, AUDITOR.
+        Example: Authorization: Bearer AUDITOR
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Validation or request error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Missing or insufficient role
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    RiskTier:
+      type: string
+      enum: [HIGH, MEDIUM, LOW]
+
+    KycStatus:
+      type: string
+      enum:
+        - PENDING
+        - DOCUMENTS_REQUESTED
+        - UNDER_REVIEW
+        - ENHANCED_DUE_DILIGENCE
+        - APPROVED
+        - REJECTED
+
+    TriggeredRule:
+      type: object
+      required: [tier, code, description]
+      properties:
+        tier:
+          type: string
+          example: HIGH
+        code:
+          type: string
+          example: HR-CNTRY
+        description:
+          type: string
+          example: Country is in high-risk list
+
+    ClassifiableRecord:
+      type: object
+      required:
+        - pep_status
+        - sanctions_screening_match
+        - adverse_media_flag
+        - country_of_tax_residence
+        - client_type
+        - annual_income
+        - source_of_funds
+      properties:
+        pep_status:
+          type: boolean
+        sanctions_screening_match:
+          type: boolean
+        adverse_media_flag:
+          type: boolean
+        country_of_tax_residence:
+          type: string
+        client_type:
+          type: string
+          enum: [INDIVIDUAL, ENTITY]
+        annual_income:
+          type: number
+          minimum: 0
+        source_of_funds:
+          type: string
+
+    RulesPayload:
+      type: object
+      required: [high_risk, medium_risk]
+      properties:
+        high_risk:
+          type: object
+          required: [countries, boolean_flags]
+          properties:
+            countries:
+              type: array
+              items:
+                type: string
+            boolean_flags:
+              type: object
+              required: [pep_status, sanctions_screening_match, adverse_media_flag]
+              properties:
+                pep_status:
+                  type: boolean
+                sanctions_screening_match:
+                  type: boolean
+                adverse_media_flag:
+                  type: boolean
+        medium_risk:
+          type: object
+          required: [countries, client_types, income_threshold, income_source_of_funds]
+          properties:
+            countries:
+              type: array
+              items:
+                type: string
+            client_types:
+              type: array
+              items:
+                type: string
+            income_threshold:
+              type: number
+            income_source_of_funds:
+              type: array
+              items:
+                type: string
+
+    SubmitOnboardingRequest:
+      allOf:
+        - $ref: '#/components/schemas/ClassifiableRecord'
+        - type: object
+          required: [client_name]
+          properties:
+            client_name:
+              type: string
+              maxLength: 255
+            declared_tier:
+              nullable: true
+              $ref: '#/components/schemas/RiskTier'
+
+    SubmitOnboardingResponse:
+      type: object
+      required:
+        - id
+        - client_name
+        - computed_tier
+        - declared_tier
+        - mismatch
+        - requires_edd
+        - rules_version
+        - triggered_rules
+      properties:
+        id:
+          type: string
+          format: uuid
+        client_name:
+          type: string
+        computed_tier:
+          $ref: '#/components/schemas/RiskTier'
+        declared_tier:
+          nullable: true
+          $ref: '#/components/schemas/RiskTier'
+        mismatch:
+          type: boolean
+        requires_edd:
+          type: boolean
+        rules_version:
+          type: string
+        triggered_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggeredRule'
+
+    CsvImportRow:
+      type: object
+      required: [row, client_name, computed_tier, declared_tier, mismatch, id]
+      properties:
+        row:
+          type: integer
+        client_name:
+          type: string
+        computed_tier:
+          $ref: '#/components/schemas/RiskTier'
+        declared_tier:
+          nullable: true
+          $ref: '#/components/schemas/RiskTier'
+        mismatch:
+          type: boolean
+        id:
+          type: string
+          format: uuid
+
+    ImportCsvResponse:
+      type: object
+      required: [total_imported, mismatches, rows]
+      properties:
+        total_imported:
+          type: integer
+        mismatches:
+          type: integer
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/CsvImportRow'
+
+    ClientView:
+      type: object
+      required:
+        - id
+        - client_name
+        - client_type
+        - computed_tier
+        - requires_edd
+        - kyc_status
+        - mismatch
+        - rules_version
+        - submitted_by
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        client_name:
+          type: string
+        client_type:
+          type: string
+        computed_tier:
+          $ref: '#/components/schemas/RiskTier'
+        requires_edd:
+          type: boolean
+        kyc_status:
+          type: string
+          nullable: true
+        mismatch:
+          type: boolean
+        rules_version:
+          type: string
+        submitted_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ClientDetailView:
+      allOf:
+        - $ref: '#/components/schemas/ClassifiableRecord'
+        - type: object
+          required:
+            - id
+            - client_name
+            - computed_tier
+            - triggered_rules
+            - requires_edd
+            - kyc_status
+            - rules_version
+            - declared_tier
+            - mismatch
+            - submitted_by
+            - created_at
+          properties:
+            id:
+              type: string
+              format: uuid
+            client_name:
+              type: string
+            computed_tier:
+              $ref: '#/components/schemas/RiskTier'
+            triggered_rules:
+              type: array
+              items:
+                $ref: '#/components/schemas/TriggeredRule'
+            requires_edd:
+              type: boolean
+            kyc_status:
+              type: string
+              nullable: true
+            rules_version:
+              type: string
+            declared_tier:
+              nullable: true
+              $ref: '#/components/schemas/RiskTier'
+            mismatch:
+              type: boolean
+            submitted_by:
+              type: string
+            created_at:
+              type: string
+              format: date-time
+
+    ActiveRulesView:
+      type: object
+      required: [version, valid_from, valid_to, source, payload]
+      properties:
+        version:
+          type: string
+        valid_from:
+          type: string
+          format: date-time
+        valid_to:
+          type: string
+          nullable: true
+          format: date-time
+        source:
+          type: string
+          enum: [SEED, FCA_WEBHOOK, MANUAL_UPLOAD]
+        payload:
+          $ref: '#/components/schemas/RulesPayload'
+
+    RulesVersionView:
+      type: object
+      required: [version, valid_from]
+      properties:
+        version:
+          type: string
+        valid_from:
+          type: string
+          format: date-time
+
+    RulesVersionInfoView:
+      type: object
+      required: [version, valid_from, created_at, created_by]
+      properties:
+        version:
+          type: string
+        valid_from:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+
+    PublishRuleSetRequest:
+      type: object
+      required: [version, payload]
+      properties:
+        version:
+          type: string
+          maxLength: 50
+        payload:
+          $ref: '#/components/schemas/RulesPayload'
+
+    FcaWebhookRequest:
+      type: object
+      required: [version, payload]
+      properties:
+        version:
+          type: string
+          maxLength: 50
+        payload:
+          $ref: '#/components/schemas/RulesPayload'
+
+    PublishRuleSetResponse:
+      type: object
+      required: [id, version, valid_from, source, superseded_version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: string
+        valid_from:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum: [SEED, FCA_WEBHOOK, MANUAL_UPLOAD]
+        superseded_version:
+          type: string
+          nullable: true
+
+    ClassifyRecordResponse:
+      type: object
+      required: [rulesVersion, computed_tier, triggered_rules, requires_edd]
+      properties:
+        rulesVersion:
+          type: string
+        computed_tier:
+          $ref: '#/components/schemas/RiskTier'
+        triggered_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggeredRule'
+        requires_edd:
+          type: boolean
+
+    OpenKycCaseRequest:
+      type: object
+      required: [client_record_id]
+      properties:
+        client_record_id:
+          type: string
+          format: uuid
+
+    OpenKycCaseResponse:
+      type: object
+      required: [id, client_record_id, status, created_by]
+      properties:
+        id:
+          type: string
+          format: uuid
+        client_record_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/KycStatus'
+        created_by:
+          type: string
+
+    TransitionKycRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/KycStatus'
+        notes:
+          type: string
+          maxLength: 2000
+
+    TransitionKycResponse:
+      type: object
+      required: [id, status, previous_status, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/KycStatus'
+        previous_status:
+          type: string
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+
+    KycCaseView:
+      type: object
+      required:
+        - id
+        - client_id
+        - client_name
+        - kyc_status
+        - previous_status
+        - updated_by
+        - requires_edd
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        client_id:
+          type: string
+          format: uuid
+        client_name:
+          type: string
+        kyc_status:
+          $ref: '#/components/schemas/KycStatus'
+        previous_status:
+          type: string
+          nullable: true
+        updated_by:
+          type: string
+        reason:
+          type: string
+          nullable: true
+        requires_edd:
+          type: boolean
+        updated_at:
+          type: string
+          format: date-time
+
+    AuditEntryView:
+      type: object
+      required: [id, aggregate_id, aggregate_type, event_type, payload, performed_by, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        aggregate_id:
+          type: string
+          format: uuid
+        aggregate_type:
+          type: string
+        event_type:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+        performed_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    BackfillResponse:
+      type: object
+      required: [auditCreated, kycCasesCreated]
+      properties:
+        auditCreated:
+          type: integer
+        kycCasesCreated:
+          type: integer
+
+    PaginatedClientView:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClientView'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    PaginatedKycCaseView:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/KycCaseView'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    PaginatedAuditEntryView:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEntryView'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      required: [statusCode, timestamp, path, message]
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+          example: /api/onboarding
+        message:
+          description: NestJS exception response payload (string or object)
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
+
+x-sentinel-notes:
+  mockAuthHeaders:
+    - Authorization: Bearer RM|COMPLIANCE_OFFICER|AUDITOR
+    - x-user-role: RM|COMPLIANCE_OFFICER|AUDITOR
+    - x-user-id: optional
+    - x-user-name: optional
+  developmentRules:
+    - Keep this file in sync with controller decorators and command/query DTOs.
+    - Treat breaking changes as versioned contract changes.
