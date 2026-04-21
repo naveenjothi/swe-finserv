@@ -54,5 +54,3 @@ export const router = createBrowserRouter([
     lazy: () => import("@/features/auth/pages/login-page"),
   },
 ])
-
-export { RoleGuard }
