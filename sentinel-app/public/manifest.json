@@ -1,0 +1,16 @@
+{
+  "name": "SENTINEL",
+  "short_name": "SENTINEL",
+  "description": "Client Onboarding Risk Classification System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1B2A4A",
+  "theme_color": "#1B2A4A",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
