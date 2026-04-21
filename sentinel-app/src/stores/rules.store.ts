@@ -54,9 +54,13 @@ export const useRulesStore = create<RulesState>()(
         }
 
         try {
-          const response = await api.get("rules/version", { headers })
+          const response = await api.get("rules/version", {
+            headers,
+            throwHttpErrors: false,
+          })
 
           if (response.status === 304) return
+          if (!response.ok) return
 
           const versionInfo = await response.json<{
             version: string
