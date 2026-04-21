@@ -24,6 +24,5 @@ const statusConfig: Record<KycStatus, { label: string; className: string }> = {
 export function KycStatusBadge({ status }: { status: KycStatus }) {
   const config = statusConfig[status]
 
-  console.log("status", status)
   return <Badge className={cn(config.className)}>{config.label}</Badge>
 }

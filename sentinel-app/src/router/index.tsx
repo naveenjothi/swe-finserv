@@ -5,7 +5,11 @@ import { RoleGuard } from "./role-guard"
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <AppShell />,
+    element: (
+      <RoleGuard allowed={["RM", "COMPLIANCE_OFFICER", "AUDITOR"]}>
+        <AppShell />
+      </RoleGuard>
+    ),
     children: [
       {
         index: true,

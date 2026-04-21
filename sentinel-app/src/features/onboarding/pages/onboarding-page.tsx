@@ -1,5 +1,6 @@
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useEffect } from "react"
 import { useNavigate } from "react-router"
 import { toast } from "sonner"
 import {
@@ -60,7 +61,14 @@ export function Component() {
   const isOnline = useOnlineStatus()
   const submitOnboarding = useSubmitOnboarding()
   const enqueue = useOfflineStore((s) => s.enqueue)
+  const flush = useOfflineStore((s) => s.flush)
   const rulesVersion = useRulesStore((s) => s.version)
+
+  useEffect(() => {
+    if (isOnline) {
+      flush()
+    }
+  }, [isOnline, flush])
 
   const {
     register,
