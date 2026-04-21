@@ -11,6 +11,7 @@ export interface ClientView {
   client_type: string;
   computed_tier: string;
   requires_edd: boolean;
+  kyc_status: string;
   mismatch: boolean;
   rules_version: string;
   submitted_by: string;

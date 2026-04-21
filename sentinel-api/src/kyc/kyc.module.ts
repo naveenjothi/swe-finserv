@@ -12,11 +12,12 @@ import {
   GetKycCaseByIdHandler,
 } from './application/queries/get-kyc-cases.handler';
 import { KycAuditHandler } from './application/event-handlers/kyc-audit.handler';
+import { EddTriggerHandler } from './application/event-handlers/edd-trigger.handler';
 import { KycController } from './infrastructure/http/kyc.controller';
 
 const commandHandlers = [OpenKycCaseHandler, TransitionKycHandler];
 const queryHandlers = [GetKycCasesHandler, GetKycCaseByIdHandler];
-const eventHandlers = [KycAuditHandler];
+const eventHandlers = [KycAuditHandler, EddTriggerHandler];
 
 @Module({
   imports: [CqrsModule, TypeOrmModule.forFeature([KycCaseOrmEntity]), AuditModule],

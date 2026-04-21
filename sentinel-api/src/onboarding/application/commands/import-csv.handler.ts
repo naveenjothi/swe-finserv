@@ -13,6 +13,9 @@ import {
 import { ImportCsvCommand, ImportCsvResult, CsvImportRow } from './import-csv.command';
 
 interface CsvRow {
+  client_id: string;
+  branch: string;
+  onboarding_date: string;
   client_name: string;
   client_type: string;
   pep_status: string;
@@ -21,7 +24,11 @@ interface CsvRow {
   country_of_tax_residence: string;
   annual_income: string;
   source_of_funds: string;
-  declared_tier?: string;
+  risk_classification?: string;
+  kyc_status?: string;
+  id_verification_date?: string;
+  relationship_manager?: string;
+  documentation_complete?: string;
 }
 
 const REQUIRED_COLUMNS = [
@@ -100,9 +107,8 @@ export class ImportCsvHandler implements ICommandHandler<ImportCsvCommand, Impor
       };
 
       const classification = this.engine.classify(classifiable, ruleSet.payload);
-      const declaredTier = parseDeclaredTier(row.declared_tier);
+      const declaredTier = parseDeclaredTier(row.risk_classification);
       const mismatch = declaredTier !== null && declaredTier !== classification.computed_tier;
-
       const entity = ClientRecord.create({
         clientName: row.client_name,
         clientType: row.client_type,

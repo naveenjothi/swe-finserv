@@ -69,8 +69,11 @@ export function Component() {
                     <RiskBadge tier={client.computed_tier} />
                   </TableCell>
                   <TableCell>
-                    {client.requires_edd ? (
-                      <Badge variant="destructive">Yes</Badge>
+                    {client.computed_tier === "HIGH" &&
+                    client.kyc_status !== "APPROVED" ? (
+                      <Badge variant="destructive">EDD Pending</Badge>
+                    ) : client.requires_edd ? (
+                      <Badge variant="secondary">EDD</Badge>
                     ) : (
                       <span className="text-muted-foreground">No</span>
                     )}

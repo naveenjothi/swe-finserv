@@ -1,7 +1,10 @@
+import { KycStatus } from '../../domain/value-objects/kyc-status.vo';
+
 export class OpenKycCaseCommand {
   constructor(
     public readonly clientRecordId: string,
     public readonly createdBy: string,
+    public readonly initialStatus?: KycStatus,
   ) {}
 }
 

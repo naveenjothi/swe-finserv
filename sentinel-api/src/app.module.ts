@@ -9,6 +9,8 @@ import { AuditModule } from './audit/audit.module';
 import { KycModule } from './kyc/kyc.module';
 import { OutboxModule } from './shared/infrastructure/outbox/outbox.module';
 import { MockAuthMiddleware } from './shared/infrastructure/guards/mock-auth.middleware';
+import { AdminController } from './shared/infrastructure/http/admin.controller';
+import { BackfillAuditEddService } from './shared/infrastructure/migrations/backfill-audit-edd.service';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { MockAuthMiddleware } from './shared/infrastructure/guards/mock-auth.mid
     KycModule,
     OutboxModule,
   ],
+  controllers: [AdminController],
+  providers: [BackfillAuditEddService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

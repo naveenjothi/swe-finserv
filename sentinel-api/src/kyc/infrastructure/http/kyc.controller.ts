@@ -1,7 +1,16 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginatedResult, PaginationDto } from '../../../shared/application/pagination.dto';
+import { IsOptional, IsString } from 'class-validator';
+
+export class KycListQueryDto extends PaginationDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  status?: string;
+}
+
 import { Role } from '../../../shared/constants/roles.enum';
 import { Roles } from '../../../shared/infrastructure/guards/roles.decorator';
 import { OpenKycCaseDto, TransitionKycDto } from '../../application/dto/kyc.dto';
@@ -47,8 +56,10 @@ export class KycController {
   @Get()
   @Roles(Role.COMPLIANCE_OFFICER)
   @ApiOperation({ summary: 'List all KYC cases (paginated)' })
-  async list(@Query() pagination: PaginationDto): Promise<PaginatedResult<KycCaseView>> {
-    return this.queryBus.execute(new GetKycCasesQuery(pagination.skip, pagination.take));
+  async list(@Query() queryDto: KycListQueryDto): Promise<PaginatedResult<KycCaseView>> {
+    return this.queryBus.execute(
+      new GetKycCasesQuery(queryDto.skip, queryDto.take, queryDto.status),
+    );
   }
 
   @Get(':id')

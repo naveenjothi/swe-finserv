@@ -34,10 +34,12 @@ export class KycCase extends AggregateRoot {
     this._updatedAt = props.updatedAt;
   }
 
-  static create(props: Omit<KycCaseProps, 'status' | 'updatedAt'>): KycCase {
+  static create(
+    props: Omit<KycCaseProps, 'status' | 'updatedAt'> & { status?: KycStatus },
+  ): KycCase {
     return new KycCase({
       ...props,
-      status: KycStatus.PENDING,
+      status: props.status ?? KycStatus.PENDING,
       updatedAt: new Date(),
     });
   }
