@@ -90,7 +90,7 @@ export const useRulesStore = create<RulesState>()(
     }),
     {
       name: "sentinel_rules_cache",
-      storage: idbStorage as any,
+      storage: idbStorage,
       partialize: (state) => ({
         version: state.version,
         payload: state.payload,

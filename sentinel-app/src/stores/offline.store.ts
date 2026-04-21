@@ -93,7 +93,7 @@ export const useOfflineStore = create<OfflineState>()(
     }),
     {
       name: "sentinel_pending_sync",
-      storage: idbStorage as any,
+      storage: idbStorage,
       partialize: (state) => ({
         pendingRecords: state.pendingRecords,
       }),
