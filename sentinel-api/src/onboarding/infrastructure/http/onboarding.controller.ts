@@ -14,6 +14,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaginatedResult, PaginationDto } from '../../../shared/application/pagination.dto';
+import { Role } from '../../../shared/constants/roles.enum';
+import { Roles } from '../../../shared/infrastructure/guards/roles.decorator';
 import { SubmitOnboardingDto } from '../../application/dto/submit-onboarding.dto';
 import {
   SubmitOnboardingCommand,
@@ -35,6 +37,7 @@ export class OnboardingController {
   ) {}
 
   @Post('onboarding')
+  @Roles(Role.RM)
   @ApiOperation({ summary: 'Submit a client onboarding record' })
   async submit(@Body() dto: SubmitOnboardingDto): Promise<SubmitOnboardingResult> {
     return this.commandBus.execute(
@@ -56,6 +59,7 @@ export class OnboardingController {
   }
 
   @Post('onboarding/import')
+  @Roles(Role.COMPLIANCE_OFFICER)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Import client records from CSV with mismatch detection' })
@@ -70,12 +74,14 @@ export class OnboardingController {
   }
 
   @Get('clients')
+  @Roles(Role.RM, Role.COMPLIANCE_OFFICER, Role.AUDITOR)
   @ApiOperation({ summary: 'List all client onboarding records (paginated)' })
   async list(@Query() pagination: PaginationDto): Promise<PaginatedResult<ClientView>> {
     return this.queryBus.execute(new GetClientsQuery(pagination.skip, pagination.take));
   }
 
   @Get('clients/:id')
+  @Roles(Role.RM, Role.COMPLIANCE_OFFICER, Role.AUDITOR)
   @ApiOperation({ summary: 'Get a single client onboarding record by ID' })
   async getById(@Param('id', ParseUUIDPipe) id: string): Promise<ClientDetailView> {
     return this.queryBus.execute(new GetClientByIdQuery(id));

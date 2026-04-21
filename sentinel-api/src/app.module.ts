@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -8,6 +8,7 @@ import { OnboardingModule } from './onboarding/onboarding.module';
 import { AuditModule } from './audit/audit.module';
 import { KycModule } from './kyc/kyc.module';
 import { OutboxModule } from './shared/infrastructure/outbox/outbox.module';
+import { MockAuthMiddleware } from './shared/infrastructure/guards/mock-auth.middleware';
 
 @Module({
   imports: [
@@ -24,4 +25,8 @@ import { OutboxModule } from './shared/infrastructure/outbox/outbox.module';
     OutboxModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(MockAuthMiddleware).forRoutes('*');
+  }
+}

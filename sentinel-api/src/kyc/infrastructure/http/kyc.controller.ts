@@ -2,6 +2,8 @@ import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from 
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaginatedResult, PaginationDto } from '../../../shared/application/pagination.dto';
+import { Role } from '../../../shared/constants/roles.enum';
+import { Roles } from '../../../shared/infrastructure/guards/roles.decorator';
 import { OpenKycCaseDto, TransitionKycDto } from '../../application/dto/kyc.dto';
 import {
   OpenKycCaseCommand,
@@ -26,12 +28,14 @@ export class KycController {
   ) {}
 
   @Post()
+  @Roles(Role.COMPLIANCE_OFFICER)
   @ApiOperation({ summary: 'Open a new KYC case for a client record' })
   async open(@Body() dto: OpenKycCaseDto): Promise<OpenKycCaseResult> {
     return this.commandBus.execute(new OpenKycCaseCommand(dto.client_record_id, 'system'));
   }
 
   @Patch(':id/status')
+  @Roles(Role.COMPLIANCE_OFFICER)
   @ApiOperation({ summary: 'Transition a KYC case to a new status' })
   async transition(
     @Param('id', ParseUUIDPipe) id: string,
@@ -41,12 +45,14 @@ export class KycController {
   }
 
   @Get()
+  @Roles(Role.COMPLIANCE_OFFICER)
   @ApiOperation({ summary: 'List all KYC cases (paginated)' })
   async list(@Query() pagination: PaginationDto): Promise<PaginatedResult<KycCaseView>> {
     return this.queryBus.execute(new GetKycCasesQuery(pagination.skip, pagination.take));
   }
 
   @Get(':id')
+  @Roles(Role.COMPLIANCE_OFFICER)
   @ApiOperation({ summary: 'Get a KYC case by ID' })
   async getById(@Param('id', ParseUUIDPipe) id: string): Promise<KycCaseView> {
     return this.queryBus.execute(new GetKycCaseByIdQuery(id));

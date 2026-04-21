@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Role } from '../../../shared/constants/roles.enum';
+import { Roles } from '../../../shared/infrastructure/guards/roles.decorator';
 import { RulesSource } from '../../domain/entities/rule-set.entity';
 import {
   PublishRuleSetCommand,
@@ -30,18 +32,21 @@ export class RulesAdminController {
   ) {}
 
   @Get('active')
+  @Roles(Role.RM, Role.COMPLIANCE_OFFICER, Role.AUDITOR)
   @ApiOperation({ summary: 'Get the currently active rule set' })
   async getActive(): Promise<ActiveRulesView> {
     return this.queryBus.execute(new GetActiveRulesQuery());
   }
 
   @Get('version')
+  @Roles(Role.RM, Role.COMPLIANCE_OFFICER, Role.AUDITOR)
   @ApiOperation({ summary: 'Get the active rules version' })
   async getVersion(): Promise<RulesVersionView> {
     return this.queryBus.execute(new GetRulesVersionQuery());
   }
 
   @Post()
+  @Roles(Role.COMPLIANCE_OFFICER)
   @ApiOperation({ summary: 'Publish a new rule set (manual upload)' })
   async publish(@Body() dto: PublishRuleSetDto): Promise<PublishRuleSetResult> {
     return this.commandBus.execute(
@@ -50,6 +55,7 @@ export class RulesAdminController {
   }
 
   @Post('classify')
+  @Roles(Role.RM, Role.COMPLIANCE_OFFICER, Role.AUDITOR)
   @ApiOperation({ summary: 'Classify a record against the active rules (dry run)' })
   async classify(@Body() record: ClassifiableRecord): Promise<ClassifyRecordResult> {
     return this.commandBus.execute(new ClassifyRecordCommand(record));

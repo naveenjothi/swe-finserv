@@ -7,8 +7,23 @@ export const api = ky.create({
     beforeRequest: [
       (request) => {
         const token = useAuthStore.getState().token
+        const role = useAuthStore.getState().role
+        const user = useAuthStore.getState().user
+
         if (token) {
           request.headers.set("Authorization", `Bearer ${token}`)
+        }
+
+        if (role) {
+          request.headers.set("x-user-role", role)
+        }
+
+        if (user?.id) {
+          request.headers.set("x-user-id", user.id)
+        }
+
+        if (user?.name) {
+          request.headers.set("x-user-name", user.name)
         }
       },
     ],

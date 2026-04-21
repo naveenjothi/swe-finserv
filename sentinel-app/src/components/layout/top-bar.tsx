@@ -4,14 +4,30 @@ import { useAuthStore } from "@/stores/auth.store"
 import { useOnlineStatus } from "@/shared/hooks/use-online-status"
 import { useOfflineStore } from "@/stores/offline.store"
 import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Wifi, WifiOff, CloudUpload } from "lucide-react"
-import { ROLE_LABELS } from "@/shared/constants/roles"
+import { ROLE_LABELS, ROLES } from "@/shared/constants/roles"
+import type { Role } from "@/shared/types/auth.types"
 
 export function TopBar() {
   const user = useAuthStore((s) => s.user)
   const role = useAuthStore((s) => s.role)
+  const switchRole = useAuthStore((s) => s.switchRole)
   const isOnline = useOnlineStatus()
   const pendingCount = useOfflineStore((s) => s.pendingRecords.length)
+
+  const roleOptions: Role[] = [
+    ROLES.RM,
+    ROLES.COMPLIANCE_OFFICER,
+    ROLES.AUDITOR,
+  ]
 
   return (
     <header className="flex h-14 items-center gap-4 border-b px-6">
@@ -38,7 +54,27 @@ export function TopBar() {
 
         {user && role && (
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">{ROLE_LABELS[role]}</span>
+            <Select
+              value={role}
+              onValueChange={(value) => {
+                const nextRole = value as Role
+                if (nextRole === role) return
+                switchRole(nextRole)
+              }}
+            >
+              <SelectTrigger size="sm" aria-label="Switch role">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {roleOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {ROLE_LABELS[option]}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
             <Separator orientation="vertical" className="h-4" />
             <span className="font-medium">{user.name}</span>
           </div>
